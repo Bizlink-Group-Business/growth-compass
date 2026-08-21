@@ -1,0 +1,1080 @@
+<meta name="robots" content="noindex, nofollow">
+<title>Axel Growth Compass</title>
+<style>
+  :root{
+    --bg:#F4F6F5; --surface:#FFFFFF; --surface2:#EDF1F0;
+    --ink:#1F2B28; --muted:#647570; --border:#DFE6E3;
+    --accent:#0D9488; --accent-ink:#0B6B60; --accent-soft:#E2F2EF;
+    --prev:#B45309; --prev-soft:#F8EEDF;
+    --now:#0D9488;
+    --down:#C2410C; --focus-bg:#FDF6E9; --focus-border:#E5C888;
+    --shadow:0 1px 3px rgba(31,43,40,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#121716; --surface:#1A211F; --surface2:#212A27;
+      --ink:#E7EDEB; --muted:#9AABA5; --border:#2C3733;
+      --accent:#19A493; --accent-ink:#5ED0C0; --accent-soft:#173430;
+      --prev:#D97706; --prev-soft:#332415;
+      --now:#0D9488;
+      --down:#E8703A; --focus-bg:#2C2617; --focus-border:#6B5525;
+      --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#121716; --surface:#1A211F; --surface2:#212A27;
+    --ink:#E7EDEB; --muted:#9AABA5; --border:#2C3733;
+    --accent:#19A493; --accent-ink:#5ED0C0; --accent-soft:#173430;
+    --prev:#D97706; --prev-soft:#332415;
+    --now:#0D9488;
+    --down:#E8703A; --focus-bg:#2C2617; --focus-border:#6B5525;
+    --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Noto Sans JP",Meiryo,sans-serif;
+    font-size:15px; line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:0 20px 80px}
+  header.app{padding:28px 0 4px}
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+  .brand h1{font-size:22px; margin:0; letter-spacing:.02em}
+  .brand h1 .cx{color:var(--accent-ink)}
+  .brand .sub{color:var(--muted); font-size:13px}
+  .tagline{color:var(--muted); font-size:13.5px; margin:6px 0 0; max-width:64ch}
+  .demo-row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
+
+  /* stepper */
+  nav.steps{display:flex; gap:6px; margin:22px 0 26px; overflow-x:auto; padding-bottom:2px}
+  nav.steps button{
+    appearance:none; border:1px solid var(--border); background:var(--surface);
+    color:var(--muted); border-radius:999px; padding:8px 16px; font-size:13.5px;
+    cursor:pointer; white-space:nowrap; font-family:inherit; display:flex; gap:8px; align-items:center;
+  }
+  nav.steps button .n{
+    display:inline-flex; width:20px; height:20px; border-radius:50%;
+    background:var(--surface2); color:var(--muted); font-size:11.5px;
+    align-items:center; justify-content:center; font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  nav.steps button.active{border-color:var(--accent); color:var(--accent-ink); background:var(--accent-soft)}
+  nav.steps button.active .n{background:var(--accent); color:#fff}
+  nav.steps button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  nav.steps button:disabled{opacity:.45; cursor:not-allowed}
+
+  section.panel{display:none}
+  section.panel.active{display:block}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:22px 24px; box-shadow:var(--shadow)}
+  .card + .card{margin-top:16px}
+  h2{font-size:17px; margin:0 0 4px; text-wrap:balance}
+  .eyebrow{font-size:11.5px; font-weight:700; letter-spacing:.14em; color:var(--accent-ink); margin:0 0 6px}
+  .hint{color:var(--muted); font-size:13px; margin:2px 0 14px}
+
+  /* form */
+  textarea, select, input[type="number"], input[type="text"]{
+    width:100%; border:1px solid var(--border); border-radius:8px; background:var(--bg);
+    color:var(--ink); font-family:inherit; font-size:14.5px; padding:10px 12px;
+  }
+  textarea{min-height:76px; resize:vertical}
+  textarea:focus-visible, select:focus-visible, input[type="number"]:focus-visible, input[type="text"]:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  .goal-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:6px}
+  .goal-grid label{
+    border:1px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer;
+    display:flex; gap:8px; align-items:center; font-size:14px; background:var(--surface);
+  }
+  .goal-grid label:has(input:checked){border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+  .goal-grid input{accent-color:var(--accent)}
+  .vgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:16px}
+  .fld label{display:block; font-size:12.5px; color:var(--muted); font-weight:600; margin-bottom:4px}
+
+  .qdim{margin-top:20px; border-top:1px solid var(--border); padding-top:16px}
+  .qdim h3{font-size:14.5px; margin:0 0 10px; color:var(--accent-ink)}
+  .q{display:flex; justify-content:space-between; gap:16px; align-items:center; padding:7px 0; flex-wrap:wrap}
+  .q p{margin:0; font-size:14px; flex:1 1 320px}
+  .likert{display:flex; gap:4px}
+  .likert label{
+    width:36px; height:32px; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:13px;
+    background:var(--surface); font-variant-numeric:tabular-nums;
+  }
+  .likert label:has(input:checked){background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700}
+  .likert input{position:absolute; opacity:0; width:0}
+  .likert-cap{display:flex; justify-content:flex-end; gap:14px; color:var(--muted); font-size:11.5px; margin-bottom:2px}
+
+  .btn{
+    appearance:none; font-family:inherit; font-size:14.5px; font-weight:700;
+    border-radius:8px; padding:11px 22px; cursor:pointer; border:1px solid transparent;
+  }
+  .btn.primary{background:var(--accent); color:#fff}
+  .btn.primary:hover{background:var(--accent-ink)}
+  .btn.ghost{background:var(--surface); border-color:var(--border); color:var(--ink); font-weight:600}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .form-foot{display:flex; align-items:center; gap:14px; margin-top:22px; flex-wrap:wrap}
+  .form-err{color:var(--down); font-size:13px; display:none}
+
+  .empty{
+    border:1px dashed var(--border); border-radius:12px; padding:40px 24px; text-align:center;
+    color:var(--muted); font-size:14px; background:var(--surface);
+  }
+
+  /* mandala */
+  .m-scroll{overflow-x:auto; padding-bottom:8px}
+  .mandala{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px; min-width:920px;
+  }
+  .m-block{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:3px;
+    background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:6px;
+  }
+  .m-block.focus{background:var(--focus-bg); border-color:var(--focus-border)}
+  .m-cell{
+    border-radius:5px; padding:7px 8px; font-size:11px; line-height:1.45;
+    background:var(--surface2); min-height:56px; display:flex; align-items:center; justify-content:center;
+    text-align:center; color:var(--ink);
+  }
+  .m-cell.head{
+    background:var(--accent); color:#fff; font-weight:700; font-size:12px; flex-direction:column; gap:2px;
+  }
+  .m-block.focus .m-cell.head{background:var(--prev)}
+  .m-cell.head .sc{font-size:10.5px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums}
+  .m-cell.vision{
+    background:var(--ink); color:var(--bg); font-weight:700; font-size:12.5px; flex-direction:column; gap:4px; padding:10px;
+  }
+  .m-cell.vision .gl{font-size:10px; font-weight:600; opacity:.75; letter-spacing:.08em}
+  .m-cell.dimref{background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+  .badge{
+    display:inline-block; font-size:10px; font-weight:700; border-radius:4px; padding:1px 6px;
+    background:rgba(255,255,255,.25);
+  }
+  .m-legend{display:flex; gap:18px; color:var(--muted); font-size:12.5px; margin-top:12px; flex-wrap:wrap}
+  .m-legend .sw{display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:5px}
+
+  /* action tracking */
+  button.m-cell.act{
+    cursor:pointer; position:relative; border:1px solid transparent; margin:0;
+    font-family:inherit; font-size:11px; line-height:1.45; appearance:none; width:100%;
+  }
+  button.m-cell.act:hover{border-color:var(--accent)}
+  button.m-cell.act:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+  .m-cell.act .st{
+    position:absolute; top:2px; right:3px; font-size:9px; font-weight:700;
+    border-radius:4px; padding:0 4px; line-height:1.6;
+  }
+  .m-cell.act.s1{border-color:var(--accent)}
+  .m-cell.act.s1 .st{background:var(--accent-soft); color:var(--accent-ink)}
+  .m-cell.act.s2{background:var(--accent); color:#fff}
+  .m-cell.act.s2 .st{background:rgba(255,255,255,.28); color:#fff}
+  .exec-summary{
+    display:flex; gap:26px; flex-wrap:wrap; align-items:baseline;
+    border:1px solid var(--border); border-radius:10px; background:var(--surface);
+    padding:12px 18px; margin:0 0 14px; font-size:13px; color:var(--muted);
+  }
+  .exec-summary strong{font-size:21px; font-weight:800; color:var(--accent-ink); font-variant-numeric:tabular-nums}
+  .exec-bars{margin-top:18px}
+  .exec-bars h3{font-size:14px; margin:0 0 6px}
+  .exec-bars .row{display:flex; align-items:center; gap:10px; font-size:12.5px; padding:3px 0}
+  .exec-bars .row .lb{flex:0 0 158px; color:var(--muted)}
+  .exec-bars .bar{flex:1; height:7px; border-radius:4px; background:var(--surface2); overflow:hidden}
+  .exec-bars .bar > div{height:100%; background:var(--accent); border-radius:4px}
+  .exec-bars .pct{width:46px; text-align:right; font-variant-numeric:tabular-nums; font-weight:700; font-size:12.5px}
+
+  /* advice */
+  .advice-head{font-size:15px; margin:26px 0 4px}
+  .advice-cap{color:var(--muted); font-size:12.5px; margin:0 0 12px}
+  .advice-list{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px}
+  .advice{border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; background:var(--surface)}
+  .advice h4{margin:0 0 2px; font-size:14.5px}
+  .advice .meta{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; margin-bottom:8px}
+  .advice p{margin:6px 0 0; font-size:13px; line-height:1.65}
+  .advice .tag{
+    display:inline-block; font-size:10.5px; font-weight:700; border-radius:4px; padding:1px 7px;
+    background:var(--accent-soft); color:var(--accent-ink); margin-right:6px; vertical-align:1px;
+  }
+  .advice .tag.chui{background:var(--prev-soft); color:var(--prev)}
+
+  /* 資質分析（両極スライダー） */
+  .axes-box{border:1px solid var(--border); border-radius:12px; background:var(--surface); padding:16px 20px; margin-bottom:16px}
+  .axis-row{display:grid; grid-template-columns:minmax(110px,1fr) minmax(130px,230px) minmax(110px,1fr); gap:14px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border)}
+  .axis-row:last-child{border-bottom:none}
+  .axis-side{display:flex; flex-direction:column; gap:2px}
+  .axis-side.l{align-items:flex-end; text-align:right}
+  .axis-side.r{align-items:flex-start}
+  .axis-pole{font-size:12.5px; font-weight:800; border-radius:999px; padding:2px 12px; background:var(--surface2); color:var(--muted)}
+  .axis-pole.on{background:var(--accent); color:#fff}
+  .axis-desc{font-size:10.5px; color:var(--muted)}
+  .axis-track{position:relative; height:8px; border-radius:4px; background:var(--surface2)}
+  .axis-track .mid{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--border)}
+  .axis-track .dot{position:absolute; top:50%; transform:translate(-50%,-50%); width:15px; height:15px; border-radius:50%; background:var(--accent); border:2.5px solid var(--surface); box-shadow:var(--shadow)}
+
+  /* 取り組みメモ（各領域ブロック直下） */
+  .m-unit{display:flex; flex-direction:column; gap:6px}
+  .m-note{border:1px solid var(--border); border-radius:8px; background:var(--surface); padding:8px 10px}
+  .m-note textarea{min-height:40px; font-size:11.5px; padding:7px 9px; line-height:1.5}
+  .m-note-foot{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:5px}
+  .nr-meta{font-size:10.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .btn.small{padding:5px 14px; font-size:12px}
+  .log-list{list-style:none; margin:8px 0 0; padding:0}
+  .log-list li{display:flex; gap:12px; padding:8px 2px; border-bottom:1px solid var(--border); font-size:13px; align-items:baseline}
+  .log-list li:last-child{border-bottom:none}
+  .log-list .dt{flex:0 0 84px; color:var(--muted); font-variant-numeric:tabular-nums; font-size:12px}
+  .log-list .chip{flex:0 0 auto}
+
+  /* radar */
+  .ring-layout{display:grid; grid-template-columns:minmax(300px,560px) minmax(240px,1fr); gap:26px; align-items:start}
+  @media (max-width:820px){.ring-layout{grid-template-columns:1fr}}
+  .legend{display:flex; gap:18px; font-size:13px; margin:4px 0 8px}
+  .legend .key{display:flex; align-items:center; gap:7px}
+  .legend .sw{width:14px; height:4px; border-radius:2px}
+  #radarBox{position:relative}
+  #tooltip{
+    position:absolute; pointer-events:none; background:var(--ink); color:var(--bg);
+    font-size:12px; border-radius:6px; padding:6px 10px; opacity:0; transition:opacity .12s;
+    white-space:nowrap; z-index:5; font-variant-numeric:tabular-nums;
+  }
+  .diff-list{list-style:none; margin:0; padding:0}
+  .diff-list li{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:7px 2px; border-bottom:1px solid var(--border); font-size:13.5px;
+  }
+  .diff-list li:last-child{border-bottom:none}
+  .delta{font-weight:700; font-variant-numeric:tabular-nums; font-size:13.5px}
+  .delta.up{color:var(--accent-ink)} .delta.down{color:var(--down)} .delta.flat{color:var(--muted)}
+  table.scores{border-collapse:collapse; width:100%; font-size:13px; margin-top:10px}
+  table.scores th, table.scores td{border:1px solid var(--border); padding:6px 10px; text-align:right; font-variant-numeric:tabular-nums}
+  table.scores th:first-child, table.scores td:first-child{text-align:left}
+  table.scores thead th{background:var(--surface2); font-weight:700}
+  .hist{margin-top:6px; color:var(--muted); font-size:12.5px}
+
+  /* jobs */
+  .job-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px}
+  .job{border:1px solid var(--border); border-radius:12px; padding:18px 20px; background:var(--surface)}
+  .job.top{border-color:var(--accent)}
+  .job .rank{font-size:11px; font-weight:700; letter-spacing:.12em; color:var(--accent-ink)}
+  .job h3{margin:2px 0 8px; font-size:16px}
+  .fitbar{height:8px; border-radius:4px; background:var(--surface2); overflow:hidden; margin:6px 0 4px}
+  .fitbar > div{height:100%; background:var(--accent); border-radius:4px}
+  .fitpct{font-weight:800; font-size:20px; font-variant-numeric:tabular-nums; color:var(--accent-ink)}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+  .chip{font-size:11.5px; border-radius:999px; padding:3px 10px; background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+  .chip.gap{background:var(--prev-soft); color:var(--prev)}
+  .chip-cap{font-size:11px; color:var(--muted); margin:10px 0 0}
+  .cta-band{
+    margin-top:18px; border-radius:12px; padding:20px 24px; background:var(--accent-soft);
+    border:1px solid var(--accent); display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap;
+  }
+  .cta-band p{margin:0; font-size:14px; color:var(--accent-ink); max-width:56ch}
+  .note{color:var(--muted); font-size:12px; margin-top:10px}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+
+<div class="wrap">
+  <header class="app">
+    <div class="brand">
+      <h1>Axel <span class="cx">Growth Compass</span></h1>
+      <span class="sub">Axel Salon 会員向け 成長診断（プロトタイプ）</span>
+    </div>
+    <p class="tagline">ビジョンとセルフ診断から、伸ばすべきスキルをマンダラチャートに自動展開。マンダラの行動を実行できたかも記録しながら、定期診断でスキルスコアの変化を可視化し、あなたに合う職種——そして転職まで伴走します。</p>
+    <div class="demo-row">
+      <button class="btn ghost" id="btnDemo">デモデータで体験する</button>
+      <button class="btn ghost" id="btnReset">履歴をリセット</button>
+    </div>
+  </header>
+
+  <nav class="steps" id="steps">
+    <button data-panel="diag" class="active"><span class="n">1</span>診断する</button>
+    <button data-panel="mandala"><span class="n">2</span>マンダラチャート</button>
+    <button data-panel="ring"><span class="n">3</span>スキルスコア</button>
+    <button data-panel="jobs"><span class="n">4</span>適職マッチ</button>
+  </nav>
+
+  <!-- ①診断 -->
+  <section class="panel active" id="panel-diag">
+    <div class="card">
+      <p class="eyebrow">STEP 1 — CURRENT</p>
+      <h2>いまの仕事を教えてください</h2>
+      <p class="hint">現在地がわかると、ビジョンとのギャップ＝伸ばすべきスキルがより正確になります。キャリア相談の際の基礎情報にもなります。</p>
+      <p class="hint" id="curPrefillNote" style="display:none; color:var(--accent-ink); font-weight:600"></p>
+      <div class="vgrid">
+        <div class="fld">
+          <label for="curIndustry">業界</label>
+          <select id="curIndustry">
+            <option value="">選択してください</option>
+            <option>IT・Web</option><option>メーカー</option><option>金融</option>
+            <option>人材</option><option>医療・福祉</option><option>小売・サービス</option>
+            <option>広告・メディア</option><option>コンサルティング</option>
+            <option>建設・不動産</option><option>公務員・団体</option><option>その他</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="curJob">職種（自由入力）</label>
+          <input type="text" id="curJob" placeholder="例: 営業、経理、エンジニア、販売">
+        </div>
+        <div class="fld">
+          <label for="curRole">役職</label>
+          <select id="curRole">
+            <option value="">選択してください</option>
+            <option>メンバー</option><option>リーダー・主任</option>
+            <option>課長・マネージャー</option><option>部長以上</option>
+            <option>経営者・役員</option><option>フリーランス</option><option>学生・その他</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:14px; margin-bottom:6px">どんな仕事をしていますか？（担当業務・扱っている商材・チーム規模など）</p>
+      <textarea id="curWork" placeholder="例）人材業界で求人広告の営業。中小企業30社を担当し、提案資料の作成から受注後のフォローまで一人で回している"></textarea>
+    </div>
+    <div class="card">
+      <p class="eyebrow">STEP 2 — VISION</p>
+      <h2>将来のビジョンを教えてください</h2>
+      <p class="hint">3年後、どんな働き方・キャリアを実現していたいですか。診断結果と組み合わせて、あなた専用の成長マップを作ります。</p>
+      <textarea id="vision" placeholder="例）AIを武器に、事業会社のAI推進ポジションへ転職して市場価値と年収を上げたい"></textarea>
+      <p class="hint" style="margin-top:14px">いちばん近いゴールを1つ選んでください</p>
+      <div class="goal-grid" id="goals">
+        <label><input type="radio" name="goal" value="fukugyo">副業で稼ぐ</label>
+        <label><input type="radio" name="goal" value="tenshoku" checked>転職する</label>
+        <label><input type="radio" name="goal" value="freelance">フリーランス独立</label>
+        <label><input type="radio" name="goal" value="kigyo">起業する</label>
+      </div>
+      <div class="vgrid">
+        <div class="fld">
+          <label for="ageTarget">何歳までに実現したい？（直接入力OK）</label>
+          <input type="number" id="ageTarget" min="18" max="80" step="1" placeholder="例: 35" list="ageList">
+          <datalist id="ageList">
+            <option value="25"></option><option value="30"></option><option value="35"></option>
+            <option value="40"></option><option value="45"></option><option value="50"></option>
+          </datalist>
+        </div>
+        <div class="fld">
+          <label for="income">希望年収</label>
+          <select id="income">
+            <option value="">未設定</option>
+            <option>〜500万円</option>
+            <option>500万円</option><option>600万円</option><option>700万円</option>
+            <option>800万円</option><option>900万円</option><option>1,000万円</option>
+            <option>1,100万円</option><option>1,200万円</option><option>1,300万円</option>
+            <option>1,400万円</option><option>1,500万円以上</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:14px">興味のある職種があれば選んでください（複数OK・任意）。その職種×AIで市場価値を上げる道筋を適職マッチで提案します。</p>
+      <div class="goal-grid" id="interests"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">STEP 3 — SELF CHECK</p>
+      <h2>スキルセルフチェック（16問）</h2>
+      <p class="hint">それぞれの文が<strong>事実として</strong>当てはまるかを選んでください（1=当てはまらない 〜 5=強く当てはまる）。「〜が得意だと思う」ではなく実際の行動・回数で答えるのがコツです。心理検査ではなく、自己申告ベースのセルフチェックです。</p>
+      <div class="likert-cap"><span>1 = 当てはまらない</span><span>5 = 強く当てはまる</span></div>
+      <div id="questions"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">STEP 4 — SELF ANALYSIS</p>
+      <h2>資質分析（12問）</h2>
+      <p class="hint">あなたの<strong>考え方の傾向</strong>を6つの軸（12種の資質）で分析します。資質に良し悪しはなく、左右どちらの傾向もそれぞれ強みです。深く考えず、直感で選んでください。結果は適職マッチの「資質適合」に反映されます。</p>
+      <div class="likert-cap"><span>1 = 当てはまらない</span><span>5 = 強く当てはまる</span></div>
+      <div id="tQuestions"></div>
+      <div class="form-foot">
+        <button class="btn primary" id="btnSubmit">診断してマンダラを生成する</button>
+        <span class="form-err" id="formErr">未回答の設問があります（ビジョンの入力もお忘れなく）</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ②マンダラ -->
+  <section class="panel" id="panel-mandala">
+    <div class="card">
+      <p class="eyebrow">MANDALA CHART</p>
+      <h2>あなたの成長マンダラ</h2>
+      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。</p>
+      <div id="mandalaWrap"></div>
+    </div>
+  </section>
+
+  <!-- ③スキルスコア -->
+  <section class="panel" id="panel-ring">
+    <div class="card">
+      <p class="eyebrow">SKILL SCORE</p>
+      <h2>スキルスコア — 前回からの変化</h2>
+      <p class="hint">スキルスコアは<strong>自己評価（セルフチェック 0〜5）</strong>と<strong>行動実行率（マンダラを実際に行動へ移せた割合）</strong>の2軸で測ります。定期的に再診断すると、レーダーの重なりで成長が見えます。頂点にカーソルを合わせると数値が出ます。</p>
+      <div id="ringWrap"></div>
+    </div>
+  </section>
+
+  <!-- ④適職マッチ -->
+  <section class="panel" id="panel-jobs">
+    <div class="card">
+      <p class="eyebrow">CAREER MATCH</p>
+      <h2>スキルスコアから見た、あなたの適職</h2>
+      <p class="hint">最新のスキルスコアと資質分析を、職種ごとの理想プロファイルと照合しています。総合適合＝<strong>スキル適合70% × 資質適合30%</strong>。スキルは後から伸ばせますが資質（考え方の傾向）は変わりにくいため、資質適合が高い職種は特に有望です。</p>
+      <div id="jobsWrap"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+'use strict';
+const DIMS = [
+  {key:'ai',    label:'AI活用力'},
+  {key:'plan',  label:'企画・課題設定力'},
+  {key:'brand', label:'発信・ブランディング力'},
+  {key:'sales', label:'営業・交渉力'},
+  {key:'data',  label:'データ分析力'},
+  {key:'exec',  label:'実行・習慣化力'},
+  {key:'learn', label:'学習アップデート力'},
+  {key:'net',   label:'ネットワーク・巻き込み力'}
+];
+/* 設問は行動・頻度ベース（抽象的な自己認識ではなく、具体的な事実で答えられる形） */
+const QUESTIONS = {
+  ai:['この1週間で、生成AI（ChatGPT/Claude等）を使って仕事の成果物（資料・メール・文章など）を3つ以上作った',
+      '議事録・週報・定型メールなど、繰り返し発生する業務のどれかをAIで半自動化できている'],
+  plan:['直近3ヶ月で、自分発の企画や改善提案を文書（1枚もの・スライド等）にして提出した',
+        '複雑な問題を、図や箇条書きに整理して人に説明した経験が直近1ヶ月にある'],
+  brand:['SNS・ブログ・noteなどで、仕事に関する発信を月4回以上している',
+         '初対面の人に、自分の強みを具体的なエピソードつきで1分で話せる'],
+  sales:['直近3ヶ月で、社内外の誰かに提案をして「Yes（承認・受注・採用）」をもらった',
+         '金額・納期・条件の交渉を、自分が前に立って行った経験がある'],
+  data:['スプレッドシートの関数やピボットテーブルを使って、自分ひとりでデータ集計ができる',
+        '数字の変化を見て「なぜ動いたのか」の仮説を立てて報告した経験が直近3ヶ月にある'],
+  exec:['直近1ヶ月、自分で決めた習慣（朝活・学習・運動など）を週4日以上続けられた',
+        '締切のある仕事を、前倒しの計画を立てて期限内に終えることがほとんどだ'],
+  learn:['新しいツールやテーマを1〜2週間で業務に使えるレベルまで覚えた経験が、直近半年にある',
+         '本・講座・勉強会で学んだことを、24時間以内に仕事で1回は試している'],
+  net:['仕事の悩みを相談できる社外の知人が3人以上いる',
+       '直近3ヶ月で、自分から人を誘って勉強会・もくもく会・企画などを動かした']
+};
+const ACTIONS = {
+  ai:['生成AIを毎日1業務に使う','プロンプトの型を10個持つ','資料作成をAIで半自動化','新しいAIツールを月1つ試す','業務フローをAI前提で再設計','社内にAI活用Tipsを共有','自分用のGPTs/Botを1つ作る','AIニュースを週次で追う'],
+  plan:['課題を図で構造化する習慣','週1で改善提案を出す','フレームワークを5つ使いこなす','企画書を月1本書く','要件を1枚に整理する練習','会議のアジェンダを自分で設計','小さく検証して早く学ぶ','優先順位を数値で決める'],
+  brand:['SNSを週3回発信する','実績をポートフォリオ化','自己紹介を30秒に磨く','note等で月1本書く','発信の反応を振り返る','自分の肩書きを言語化','勉強会・登壇で話す','プロフィールを定期更新'],
+  sales:['提案の型（PREP）を使う','商談ロープレを月2回','ヒアリング質問集を作る','見積・交渉を経験する','断られた理由を記録する','価値ベースで語る練習','紹介依頼を仕組み化する','決裁者と話す機会を作る'],
+  data:['KPIを自分で定義する','スプシ関数を毎週1つ覚える','SQL・BIの基礎を学ぶ','グラフで報告する習慣','データで意思決定を提案','小さなA/Bテストを回す','ダッシュボードを1つ作る','統計の入門書を1冊読む'],
+  exec:['朝のルーティンを固定する','週次振り返りを15分','タスクを前日に計画する','小さな締切を自分で設定','「完了の定義」を先に書く','習慣トラッカーを使う','先延ばし対策を仕組み化','月次で目標を見直す'],
+  learn:['学習時間を週5時間確保','学びを24時間以内に実践','要約・整理をAIで効率化','講座・書籍を月1本消化','勉強会に月1回参加する','学んだことを発信する','メンターに質問する','資格・認定を1つ取る'],
+  net:['月2人と新しく話す','コミュニティで発言する','Giveから始める習慣','小さなイベントを企画','SNSで同業とつながる','推薦し合える関係を作る','社外プロジェクトに参加','人と人を紹介してつなぐ']
+};
+const ADVICE = {
+  ai:   {learn:'プロンプト設計の型（役割・制約・例示）と、生成AIの得意/不得意の見極め方を学ぶ。サロンの導入編動画・AI活用勉強会が対応。',
+         do:'「毎日1つの業務をAIでやってみる」を2週間続ける。資料作成・メール・議事録など、まず時間のかかる定型業務から置き換える。'},
+  plan: {learn:'課題を構造化するフレームワーク（ロジックツリー・イシューの立て方）を1冊学び、企画書の型を手に入れる。',
+         do:'週1回、自分の業務の改善提案を1枚にまとめて出す。小さくてもいいので「自分発の企画」を月1本動かす。'},
+  brand:{learn:'発信のテーマ設計（誰に・何の専門家として見られたいか）を学ぶ。伸びている発信者の投稿を10本分解してみる。',
+         do:'SNSで週3回、学んだこと・やってみたことを発信する。実績はポートフォリオに貯めて、プロフィールを月1回更新する。'},
+  sales:{learn:'提案の型（PREP法・ヒアリング設計）と価格交渉の基本を学ぶ。断られた理由の振り返りが一番の教材になる。',
+         do:'商談やプレゼンの機会を月2回以上つくる。社内の企画提案・副業の営業・勉強会での発表、どれでも「合意を取る」経験を積む。'},
+  data: {learn:'スプレッドシート関数→SQL/BIツールの順で基礎を学ぶ。「KPIを自分で定義して測る」考え方を身につける。',
+         do:'今の業務の数字を1つ選んでグラフ化し、示唆をつけて報告する。月1つダッシュボードや集計の自動化を作ってみる。'},
+  exec: {learn:'習慣化の仕組み（if-thenプランニング・トリガー設計）を学ぶ。根性ではなく仕組みで続ける方法を知る。',
+         do:'マンダラの重点アクションを1つ選び、毎日の決まった時間に組み込む。週次15分の振り返りをカレンダーに固定する。'},
+  learn:{learn:'学習の高速化（AIでの要約・アウトプット前提のインプット）を身につける。学ぶ対象はマンダラの重点領域に絞る。',
+         do:'週5時間の学習枠を先にカレンダーで確保し、学んだことを24時間以内に仕事で1回使う。勉強会には月1回参加する。'},
+  net:  {learn:'コミュニティでの信頼の作り方（Give first・発信との掛け算）を学ぶ。紹介が生まれる関係の構造を知る。',
+         do:'サロン内で月2人と1on1で話す。イベントや勉強会で運営side・登壇sideに回ると、つながりの質が一気に変わる。'}
+};
+/* 資質分析: 6軸の両極型。左右どちらも強み（良し悪しではない） */
+const AXES = [
+  {key:'gaiko', left:'外向', right:'内省', ldesc:'幅広い人と関係を築く', rdesc:'一人で深く考える'},
+  {key:'kansei', left:'感性', right:'論理', ldesc:'ひらめきで発想する', rdesc:'整理・分析して判断する'},
+  {key:'shudo', left:'主導', right:'共感', ldesc:'自ら主導し決断する', rdesc:'相手を尊重し支える'},
+  {key:'tassei', left:'達成', right:'貢献', ldesc:'目標達成に邁進する', rdesc:'チームの成長を支える'},
+  {key:'kiritsu', left:'規律', right:'適応', ldesc:'仕組みとルールで進める', rdesc:'変化に柔軟に対応する'},
+  {key:'chosen', left:'着実', right:'挑戦', ldesc:'リスクを避け確実に進める', rdesc:'リスクを取り素早く動く'}
+];
+const AXIS_QUESTIONS = { /* [左極の設問, 右極の設問] */
+  gaiko:['初対面でも幅広く人とつながるのが得意だ','一人でじっくり考える時間が欠かせない'],
+  kansei:['ひらめきや直感からアイデアを出すことが多い','物事を整理・分析してから判断したい'],
+  shudo:['議論では自分が主導して決めたいほうだ','相手の意見を尊重し、支える役割が心地よい'],
+  tassei:['目標を決めたら達成まで一気に走りたい','自分の成果よりチームの成長が嬉しい'],
+  kiritsu:['ルールや仕組みを作って進めるのが得意だ','状況の変化に合わせて柔軟にやり方を変えたい'],
+  chosen:['確実にうまくいく方法を選びたい','リスクがあっても新しいことに挑戦したい']
+};
+const POLE_NOTES = { /* 資質ごとの強みと注意点 */
+  '外向':{tsuyomi:'人脈構築が速く、場を動かす力がある', chui:'考える前に動いて空回りすることも'},
+  '内省':{tsuyomi:'深い思考と細部への気づきがある', chui:'動き出しが遅れがち'},
+  '感性':{tsuyomi:'発想力があり、0→1のひらめきに強い', chui:'根拠の説明が後回しになりがち'},
+  '論理':{tsuyomi:'整理・分析に強く、判断に再現性がある', chui:'慎重になりすぎて機会を逃すことも'},
+  '主導':{tsuyomi:'決断力と推進力でチームを引っ張れる', chui:'周囲への配慮が欠けることがある'},
+  '共感':{tsuyomi:'傾聴と支援で信頼を築ける', chui:'自分の主張を飲み込みすぎることがある'},
+  '達成':{tsuyomi:'向上心が強く、決めたことをやり切れる', chui:'他者のペースに無頓着になりがち'},
+  '貢献':{tsuyomi:'チームを伸ばし、協力の場をつくれる', chui:'自分の成果づくりが後回しになりがち'},
+  '規律':{tsuyomi:'仕組み化と安定運用が得意', chui:'急な変化への対応が遅れがち'},
+  '適応':{tsuyomi:'変化に柔軟で、環境適応が速い', chui:'仕組み化・反復の徹底が苦手になりがち'},
+  '着実':{tsuyomi:'粘り強く、確実に積み上げられる', chui:'挑戦の機会を逃しやすい'},
+  '挑戦':{tsuyomi:'行動力があり、新しい物事に強い', chui:'同じことの継続・反復が苦手になりがち'}
+};
+const AI_VALUE = {
+  '生成AIコンサルタント':'AI導入を設計できる人材は需要過多。事業側の経験×生成AI知見の掛け算で、未経験からでも高年収帯を狙える代表職種です。',
+  'AI活用営業・営業企画':'営業経験×AI活用は最も再現性の高い市場価値アップ。提案資料・リスト作成・商談分析をAIで武装した営業はまだ希少です。',
+  'データアナリスト':'AIがコードやSQLを書く時代は「分析の問いを立てる力」との掛け算で価値が跳ねます。AI活用で学習コストも大幅に短縮できます。',
+  'プロダクトマネージャー':'AIプロダクトを企画できるPdMは採用市場の最激戦区。AIで仕様書・調査を高速化しながらAI機能の企画経験を積むと強いです。',
+  'デジタルマーケター':'クリエイティブ量産・分析・広告運用はAIで生産性が数倍に。AIマーケ人材はまだ少なく、実績を作れば単価が上がります。',
+  'カスタマーサクセス':'AIチャット・FAQなど顧客対応の自動化設計を主導できるCSはSaaS企業で引く手あまた。対人力×AI運用設計が差別化になります。',
+  '生成AIエンジニア':'LLMアプリ開発経験は現在もっともプレミアムが付くスキル。小さな社内Bot開発からでも十分実績になります。',
+  '事業開発（新規事業づくり）':'AI活用の新規事業を立ち上げた経験は経営層に最も近い市場価値。AIで検証速度を上げて0→1の実績を作りましょう。',
+  '経営企画':'経営データの分析・事業計画資料の作成はAIで劇的に効率化できます。AIで市場分析を高速に回せる経営企画人材はまだ希少です。',
+  '人事・採用（HR)':'求人票・スカウト文・面接分析などHR業務はAI活用の効果が特に大きい領域。人への感度×AI活用で市場価値が上がります。',
+  '広報・PR':'プレスリリース・SNS・コンテンツ制作をAIで量産できる広報はまだ少数。発信力×AIで「一人広報」でも大きな成果を出せます。'
+};
+const GOAL_LABELS = {fukugyo:'副業で稼ぐ', tenshoku:'転職する', freelance:'フリーランス独立', kigyo:'起業する'};
+const GOAL_WEIGHTS = {
+  fukugyo:  {ai:3, plan:2, brand:3, sales:2, data:1.5, exec:3, learn:2, net:2},
+  tenshoku: {ai:3, plan:2.5, brand:2, sales:1.5, data:2, exec:2, learn:3, net:2},
+  freelance:{ai:2.5, plan:2, brand:3, sales:3, data:1.5, exec:2.5, learn:2, net:3},
+  kigyo:    {ai:2, plan:3, brand:2.5, sales:3, data:2, exec:2.5, learn:2, net:3}
+};
+/* axes: 各軸の理想位置 -2.0（左極寄り）〜 +2.0（右極寄り） */
+const JOBS = [
+  {label:'生成AIコンサルタント',   ideal:{ai:5, plan:4.5, brand:3, sales:3.5, data:3.5, exec:3.5, learn:4.5, net:3.5},
+   axes:{gaiko:-0.5, kansei:1, shudo:-0.5, tassei:-0.5, kiritsu:0, chosen:0.5}},
+  {label:'AI活用営業・営業企画',   ideal:{ai:4, plan:4, brand:3, sales:4.5, data:3, exec:4, learn:3.5, net:4},
+   axes:{gaiko:-1.5, kansei:0, shudo:-1, tassei:-1, kiritsu:0.5, chosen:0.5}},
+  {label:'経営企画',               ideal:{ai:3.5, plan:5, brand:2.5, sales:3, data:4.5, exec:4, learn:4, net:3.5},
+   axes:{gaiko:0.5, kansei:1.5, shudo:-0.5, tassei:-0.5, kiritsu:-1, chosen:-0.5}},
+  {label:'データアナリスト',       ideal:{ai:4, plan:4, brand:2.5, sales:2.5, data:5, exec:3.5, learn:4, net:3},
+   axes:{gaiko:1, kansei:2, shudo:0.5, tassei:0, kiritsu:-0.5, chosen:-0.5}},
+  {label:'プロダクトマネージャー', ideal:{ai:4, plan:5, brand:3, sales:3.5, data:4, exec:4.5, learn:4, net:4.5},
+   axes:{gaiko:-0.5, kansei:0.5, shudo:-1, tassei:-0.5, kiritsu:0, chosen:0.5}},
+  {label:'デジタルマーケター',     ideal:{ai:4, plan:4, brand:4.5, sales:3, data:4, exec:4, learn:4, net:3.5},
+   axes:{gaiko:-0.5, kansei:-1, shudo:0, tassei:-0.5, kiritsu:0.5, chosen:0.5}},
+  {label:'カスタマーサクセス',     ideal:{ai:3.5, plan:3.5, brand:3, sales:4, data:3.5, exec:4, learn:3.5, net:4.5},
+   axes:{gaiko:-1, kansei:0.5, shudo:1.5, tassei:1, kiritsu:0, chosen:-0.5}},
+  {label:'人事・採用（HR)',        ideal:{ai:3, plan:3.5, brand:3.5, sales:3.5, data:3, exec:4, learn:3.5, net:4.5},
+   axes:{gaiko:-1, kansei:0.5, shudo:1, tassei:1, kiritsu:-0.5, chosen:-0.5}},
+  {label:'広報・PR',               ideal:{ai:3, plan:3.5, brand:5, sales:3, data:3, exec:3.5, learn:3.5, net:4.5},
+   axes:{gaiko:-2, kansei:-0.5, shudo:0, tassei:-0.5, kiritsu:0.5, chosen:0.5}},
+  {label:'生成AIエンジニア',       ideal:{ai:5, plan:3.5, brand:2.5, sales:2, data:4, exec:4, learn:4.5, net:2.5},
+   axes:{gaiko:1.5, kansei:1, shudo:0.5, tassei:-0.5, kiritsu:-0.5, chosen:0}},
+  {label:'事業開発（新規事業づくり）', ideal:{ai:3.5, plan:4.5, brand:3.5, sales:4.5, data:3.5, exec:4, learn:4, net:4.5},
+   axes:{gaiko:-1.5, kansei:-0.5, shudo:-1.5, tassei:-1, kiritsu:1, chosen:1.5}}
+];
+const STORE_KEY = 'axelCompassHistory';
+const ACT_KEY = 'axelCompassActions';
+const ACT_LABELS = ['', '実行中', '習慣化'];
+
+/* ---------- action tracking ---------- */
+function loadActs(){ try{ return JSON.parse(localStorage.getItem(ACT_KEY)) || {}; }catch(e){ return {}; } }
+function saveActs(a){ localStorage.setItem(ACT_KEY, JSON.stringify(a)); }
+function actState(k){ return loadActs()[k] || 0; }
+function cycleAct(k){
+  const a = loadActs();
+  a[k] = ((a[k] || 0) + 1) % 3;
+  saveActs(a);
+}
+/* 実行率: 実行中=0.5 / 習慣化=1.0 換算 */
+function execStats(dimKey){
+  let started = 0, habit = 0;
+  ACTIONS[dimKey].forEach((_,j)=>{
+    const s = actState(dimKey+'_'+j);
+    if(s === 1) started++;
+    if(s === 2) habit++;
+  });
+  return {started, habit, rate: Math.round((started*0.5 + habit) / 8 * 100)};
+}
+function execTotal(){
+  let started = 0, habit = 0;
+  DIMS.forEach(d=>{ const s = execStats(d.key); started += s.started; habit += s.habit; });
+  return {started, habit, rate: Math.round((started*0.5 + habit) / 64 * 100)};
+}
+
+/* ---------- 取り組みメモ（領域別・履歴つき） ---------- */
+const NOTE_KEY = 'axelCompassNotes';
+function loadNotes(){ try{ return JSON.parse(localStorage.getItem(NOTE_KEY)) || {}; }catch(e){ return {}; } }
+function latestNote(dimKey){
+  const arr = loadNotes()[dimKey] || [];
+  return arr.length ? arr[arr.length-1] : null;
+}
+function saveNote(dimKey, text){
+  const all = loadNotes();
+  const arr = all[dimKey] || [];
+  const last = arr.length ? arr[arr.length-1] : null;
+  if(last && last.text === text.trim()) return false;      // 変更なしなら記録しない
+  if(!text.trim() && !last) return false;
+  arr.push({at: new Date().toISOString(), text: text.trim()});
+  all[dimKey] = arr;
+  localStorage.setItem(NOTE_KEY, JSON.stringify(all));
+  return true;
+}
+function allNoteEntries(){
+  const all = loadNotes(), out = [];
+  DIMS.forEach(d=>{
+    (all[d.key] || []).forEach(n=>out.push({dim:d.label, at:n.at, text:n.text}));
+  });
+  return out.sort((a,b)=> a.at < b.at ? 1 : -1);
+}
+
+/* ---------- state ---------- */
+function loadHistory(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }catch(e){ return []; } }
+function saveHistory(h){ localStorage.setItem(STORE_KEY, JSON.stringify(h)); }
+function latest(){ const h = loadHistory(); return h.length ? h[h.length-1] : null; }
+function previous(){ const h = loadHistory(); return h.length > 1 ? h[h.length-2] : null; }
+function fmtDate(iso){ const d = new Date(iso); return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); }
+
+/* ---------- tabs ---------- */
+const stepsNav = document.getElementById('steps');
+stepsNav.addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  activate(b.dataset.panel);
+});
+function activate(name){
+  document.querySelectorAll('nav.steps button').forEach(b=>b.classList.toggle('active', b.dataset.panel===name));
+  document.querySelectorAll('section.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+}
+
+/* ---------- diagnosis form ---------- */
+const qBox = document.getElementById('questions');
+DIMS.forEach(d=>{
+  const div = document.createElement('div');
+  div.className = 'qdim';
+  let html = '<h3>'+d.label+'</h3>';
+  QUESTIONS[d.key].forEach((q,i)=>{
+    const name = 'q_'+d.key+'_'+i;
+    html += '<div class="q"><p>'+q+'</p><div class="likert">';
+    for(let v=1; v<=5; v++){
+      html += '<label><input type="radio" name="'+name+'" value="'+v+'">'+v+'</label>';
+    }
+    html += '</div></div>';
+  });
+  div.innerHTML = html;
+  qBox.appendChild(div);
+});
+// 興味のある職種チェックボックス
+document.getElementById('interests').innerHTML = JOBS.map(j=>
+  '<label><input type="checkbox" name="interest" value="'+j.label+'">'+j.label+'</label>').join('');
+
+// 資質設問: 軸名は見せず、左極→右極の2周に分けて交互に出す（回答バイアスを減らす）
+const tBox = document.getElementById('tQuestions');
+{
+  let html = '';
+  [0,1].forEach(round=>{
+    AXES.forEach(a=>{
+      const name = 't_'+a.key+'_'+round;
+      html += '<div class="q"><p>'+AXIS_QUESTIONS[a.key][round]+'</p><div class="likert">';
+      for(let v=1; v<=5; v++) html += '<label><input type="radio" name="'+name+'" value="'+v+'">'+v+'</label>';
+      html += '</div></div>';
+    });
+  });
+  tBox.innerHTML = html;
+}
+
+document.getElementById('btnSubmit').addEventListener('click', ()=>{
+  const vision = document.getElementById('vision').value.trim();
+  const goal = document.querySelector('input[name=goal]:checked').value;
+  const scores = {};
+  let ok = !!vision;
+  DIMS.forEach(d=>{
+    let sum = 0;
+    QUESTIONS[d.key].forEach((_,i)=>{
+      const el = document.querySelector('input[name=q_'+d.key+'_'+i+']:checked');
+      if(!el){ ok = false; return; }
+      sum += Number(el.value);
+    });
+    scores[d.key] = Math.round(sum / QUESTIONS[d.key].length * 10) / 10;
+  });
+  /* 軸位置 = (右極スコア − 左極スコア) / 2 → -2.0（左寄り）〜 +2.0（右寄り） */
+  const axes = {};
+  AXES.forEach(a=>{
+    const l = document.querySelector('input[name=t_'+a.key+'_0]:checked');
+    const r = document.querySelector('input[name=t_'+a.key+'_1]:checked');
+    if(!l || !r){ ok = false; return; }
+    axes[a.key] = Math.round((Number(r.value) - Number(l.value)) / 2 * 10) / 10;
+  });
+  const err = document.getElementById('formErr');
+  if(!ok){ err.style.display = 'inline'; return; }
+  err.style.display = 'none';
+  const ageVal = document.getElementById('ageTarget').value.trim();
+  const meta = {
+    ageTarget: ageVal ? ageVal + '歳' : '',
+    income: document.getElementById('income').value,
+    interests: Array.from(document.querySelectorAll('input[name=interest]:checked')).map(el=>el.value),
+    current: {
+      industry: document.getElementById('curIndustry').value,
+      jobTitle: document.getElementById('curJob').value.trim(),
+      role: document.getElementById('curRole').value,
+      workDesc: document.getElementById('curWork').value.trim()
+    }
+  };
+  const h = loadHistory();
+  h.push({takenAt:new Date().toISOString(), goal, vision, scores, axes, meta});
+  saveHistory(h);
+  renderAll();
+  activate('mandala');
+});
+
+/* ---------- demo / reset ---------- */
+document.getElementById('btnDemo').addEventListener('click', ()=>{
+  const now = new Date();
+  const prev = new Date(now); prev.setMonth(prev.getMonth()-6);
+  const vision = 'AIを武器に、事業会社のAI推進ポジションへ転職して市場価値と年収を上げる';
+  saveHistory([
+    {takenAt:prev.toISOString(), goal:'tenshoku', vision,
+     scores:{ai:2.0, plan:2.5, brand:1.5, sales:3.0, data:2.0, exec:3.0, learn:2.5, net:2.0},
+     axes:{gaiko:-0.5, kansei:0.5, shudo:-1, tassei:-0.5, kiritsu:0.5, chosen:-0.5}},
+    {takenAt:now.toISOString(), goal:'tenshoku', vision,
+     scores:{ai:3.5, plan:3.0, brand:2.5, sales:3.5, data:2.5, exec:3.5, learn:3.5, net:2.5},
+     axes:{gaiko:-1, kansei:0.5, shudo:-1, tassei:-1, kiritsu:0.5, chosen:1},
+     meta:{ageTarget:'35歳', income:'800万円', interests:['生成AIコンサルタント','経営企画'],
+           current:{industry:'人材', jobTitle:'営業企画', role:'メンバー',
+                    workDesc:'求人広告の営業企画。週次レポート作成とキャンペーン設計を担当'}}}
+  ]);
+  saveActs({ai_0:2, ai_1:1, ai_3:1, ai_6:1, plan_1:1, brand_0:1, brand_3:1, sales_2:2,
+            data_0:1, exec_0:2, exec_2:1, learn_0:2, learn_1:1, learn_4:2, net_0:1});
+  const d7 = new Date(now); d7.setDate(d7.getDate()-7);
+  localStorage.setItem(NOTE_KEY, JSON.stringify({
+    ai:[{at:prev.toISOString(), text:'ChatGPTで議事録要約を試しはじめた'},
+        {at:d7.toISOString(), text:'週次レポート作成をClaudeで半自動化。毎週30分の短縮に成功'}],
+    learn:[{at:d7.toISOString(), text:'生成AI活用講座を受講開始。学んだことは翌日の業務で必ず1回試すルールにした'}],
+    brand:[{at:now.toISOString(), text:'noteで学習ログを2本公開。Xでも週3回の発信を継続中'}]
+  }));
+  renderAll();
+  activate('ring');
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  localStorage.removeItem(STORE_KEY);
+  localStorage.removeItem(ACT_KEY);
+  localStorage.removeItem(NOTE_KEY);
+  renderAll();
+  activate('diag');
+});
+
+/* ---------- mandala ---------- */
+function priorities(rec){
+  const w = GOAL_WEIGHTS[rec.goal];
+  return DIMS.map(d=>({key:d.key, label:d.label, score:rec.scores[d.key],
+    pri: w[d.key] * (5 - rec.scores[d.key])}))
+    .sort((a,b)=>b.pri-a.pri);
+}
+function renderMandala(){
+  const box = document.getElementById('mandalaWrap');
+  const rec = latest();
+  if(!rec){ box.innerHTML = '<div class="empty">まだ診断がありません。「診断する」からはじめるか、上部の「デモデータで体験する」を押してください。</div>'; return; }
+  const pri = priorities(rec);
+  const focusKeys = new Set(pri.slice(0,3).map(p=>p.key));
+  // block layout: positions 0..8, center=4
+  const order = [0,1,2,3,4,5,6,7]; // dims in DIMS order → blocks around center
+  const blockPos = [0,1,2,3,5,6,7,8];
+  const blocks = new Array(9);
+  // center block: vision + 8 dim names
+  let centerCells = '';
+  const around = [0,1,2,3,4,5,6,7];
+  const cellPos = [0,1,2,3,5,6,7,8];
+  const centerArr = new Array(9);
+  DIMS.forEach((d,i)=>{ centerArr[cellPos[i]] = '<div class="m-cell dimref">'+d.label+'</div>'; });
+  const metaBits = [];
+  if(rec.meta && rec.meta.ageTarget) metaBits.push(rec.meta.ageTarget+'までに');
+  if(rec.meta && rec.meta.income) metaBits.push('年収 '+rec.meta.income);
+  centerArr[4] = '<div class="m-cell vision"><span class="gl">'+(GOAL_LABELS[rec.goal])+(metaBits.length?' ・ '+metaBits.join(' ・ '):'')+'</span>'+escapeHtml(shorten(rec.vision, 60))+'</div>';
+  blocks[4] = '<div class="m-unit"><div class="m-block">'+centerArr.join('')+'</div></div>';
+  DIMS.forEach((d,i)=>{
+    const isFocus = focusKeys.has(d.key);
+    const st = execStats(d.key);
+    const arr = new Array(9);
+    ACTIONS[d.key].forEach((a,j)=>{
+      const k = d.key+'_'+j, s = actState(k);
+      arr[cellPos[j]] = '<button type="button" class="m-cell act s'+s+'" data-act="'+k+'" aria-pressed="'+(s>0)+'">'+a+(s>0?'<span class="st">'+ACT_LABELS[s]+'</span>':'')+'</button>';
+    });
+    arr[4] = '<div class="m-cell head">'+(isFocus?'<span class="badge">重点</span>':'')+d.label+'<span class="sc">自己評価 '+rec.scores[d.key].toFixed(1)+' / 5.0</span><span class="sc">行動 '+(st.started+st.habit)+'/8</span></div>';
+    // 取り組みメモ: 各領域ブロックの直下に配置（記録するたび日時つき履歴→スキルスコアに転記）
+    const ln = latestNote(d.key);
+    const cnt = (loadNotes()[d.key] || []).length;
+    const noteHtml = '<div class="m-note">' +
+      '<textarea data-note="'+d.key+'" placeholder="'+d.label+'で取り組んだことをメモ…">'+(ln ? escapeHtml(ln.text) : '')+'</textarea>' +
+      '<div class="m-note-foot"><span class="nr-meta">'+(ln ? fmtDate(ln.at)+' ・ '+cnt+'件' : '未記録')+'</span>' +
+      '<button type="button" class="btn ghost small" data-notesave="'+d.key+'">記録</button></div></div>';
+    blocks[blockPos[i]] = '<div class="m-unit"><div class="m-block'+(isFocus?' focus':'')+'">'+arr.join('')+'</div>'+noteHtml+'</div>';
+  });
+  const tot = execTotal();
+  box.innerHTML =
+    '<div class="exec-summary">' +
+      '<span>行動実行率 <strong>'+tot.rate+'%</strong></span>' +
+      '<span>実行中 <strong style="font-size:16px">'+tot.started+'</strong> / 64</span>' +
+      '<span>習慣化 <strong style="font-size:16px">'+tot.habit+'</strong> / 64</span>' +
+      '<span style="font-size:12px">実行中=0.5、習慣化=1.0として換算</span>' +
+    '</div>' +
+    '<div class="m-scroll"><div class="mandala">'+blocks.join('')+'</div></div>' +
+    '<div class="m-legend">' +
+      '<span><span class="sw" style="background:var(--focus-bg); border:1px solid var(--focus-border)"></span>重点領域（優先度Top3）</span>' +
+      '<span><span class="sw" style="background:var(--accent)"></span>成長領域（8軸）</span>' +
+      '<span>マスをクリック: 未着手 → 実行中 → 習慣化</span>' +
+      '<span>各領域の下のメモに取り組んだことを記録 → スキルスコアの一覧に転記</span>' +
+      '<span>診断日: '+fmtDate(rec.takenAt)+'</span>' +
+    '</div>';
+}
+document.getElementById('mandalaWrap').addEventListener('click', e=>{
+  const save = e.target.closest('button[data-notesave]');
+  if(save){
+    const k = save.dataset.notesave;
+    const ta = document.querySelector('textarea[data-note="'+k+'"]');
+    if(ta && saveNote(k, ta.value)){ renderMandala(); renderRing(); }
+    return;
+  }
+  const b = e.target.closest('button.m-cell.act');
+  if(!b) return;
+  cycleAct(b.dataset.act);
+  renderMandala();
+  renderRing();
+});
+function shorten(s,n){ return s.length>n ? s.slice(0,n)+'…' : s; }
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ---------- skill ring (radar) ---------- */
+function renderRing(){
+  const box = document.getElementById('ringWrap');
+  const cur = latest(), prev = previous();
+  if(!cur){ box.innerHTML = '<div class="empty">まだ診断がありません。診断を完了するとスキルスコアが表示されます。</div>'; return; }
+
+  const W=560, H=470, CX=W/2, CY=H/2+6, R=168;
+  const angle = i => -Math.PI/2 + i * 2*Math.PI/8;
+  const pt = (i, v) => [CX + Math.cos(angle(i))*R*v/5, CY + Math.sin(angle(i))*R*v/5];
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="スキルスコア レーダーチャート" style="width:100%; height:auto; display:block">';
+  // rings
+  for(let lv=1; lv<=5; lv++){
+    const pts = DIMS.map((_,i)=>pt(i,lv).join(',')).join(' ');
+    svg += '<polygon points="'+pts+'" fill="none" stroke="var(--border)" stroke-width="1"/>';
+  }
+  // spokes + labels
+  DIMS.forEach((d,i)=>{
+    const [x,y] = pt(i,5);
+    svg += '<line x1="'+CX+'" y1="'+CY+'" x2="'+x+'" y2="'+y+'" stroke="var(--border)" stroke-width="1"/>';
+    const [lx,ly] = [CX + Math.cos(angle(i))*(R+26), CY + Math.sin(angle(i))*(R+22)];
+    const anchor = Math.abs(Math.cos(angle(i))) < .3 ? 'middle' : (Math.cos(angle(i)) > 0 ? 'start' : 'end');
+    svg += '<text x="'+lx+'" y="'+ly+'" text-anchor="'+anchor+'" font-size="12" fill="var(--muted)" font-family="inherit">'+d.label+'</text>';
+  });
+  // polygons: prev first (behind)
+  function poly(rec, color, dash){
+    const pts = DIMS.map((d,i)=>pt(i, rec.scores[d.key]).join(',')).join(' ');
+    return '<polygon points="'+pts+'" fill="'+color+'" fill-opacity="0.13" stroke="'+color+'" stroke-width="2"'+(dash?' stroke-dasharray="5 4"':'')+'/>';
+  }
+  if(prev) svg += poly(prev, 'var(--prev)', true);
+  svg += poly(cur, 'var(--now)', false);
+  // vertex dots with hover targets
+  DIMS.forEach((d,i)=>{
+    if(prev){
+      const [px,py] = pt(i, prev.scores[d.key]);
+      svg += '<circle cx="'+px+'" cy="'+py+'" r="3.5" fill="var(--prev)" stroke="var(--surface)" stroke-width="2"/>';
+    }
+    const [x,y] = pt(i, cur.scores[d.key]);
+    svg += '<circle cx="'+x+'" cy="'+y+'" r="4" fill="var(--now)" stroke="var(--surface)" stroke-width="2"/>';
+    svg += '<circle cx="'+x+'" cy="'+y+'" r="14" fill="transparent" class="hit" data-i="'+i+'" style="cursor:pointer"/>';
+  });
+  svg += '</svg>';
+
+  // diff list + table
+  let diffHtml = '';
+  if(prev){
+    const diffs = DIMS.map(d=>({label:d.label, cur:cur.scores[d.key], prev:prev.scores[d.key], delta:Math.round((cur.scores[d.key]-prev.scores[d.key])*10)/10}))
+      .sort((a,b)=>b.delta-a.delta);
+    diffHtml = '<h2 style="font-size:15px; margin-top:0">'+fmtDate(prev.takenAt)+' → '+fmtDate(cur.takenAt)+' の変化</h2><ul class="diff-list">' +
+      diffs.map(x=>{
+        const cls = x.delta > 0 ? 'up' : x.delta < 0 ? 'down' : 'flat';
+        const sign = x.delta > 0 ? '▲ +' : x.delta < 0 ? '▼ ' : '± ';
+        return '<li><span>'+x.label+'</span><span class="delta '+cls+'">'+sign+x.delta.toFixed(1)+'</span></li>';
+      }).join('') + '</ul>';
+  } else {
+    diffHtml = '<p class="hint">診断は1回目です。次回の診断（3ヶ月〜半年後）から、前回との比較が表示されます。</p>';
+  }
+  const hist = loadHistory();
+  const avg = r => (DIMS.reduce((s,d)=>s+r.scores[d.key],0)/8).toFixed(1);
+  const histHtml = '<p class="hist">診断履歴: '+hist.map(r=>fmtDate(r.takenAt)+'（平均 '+avg(r)+'）').join(' → ')+'</p>';
+  const execHtml = '<div class="exec-bars"><h3>行動実行率（マンダラのアクションを実際に行動へ移せた割合）</h3>' +
+    DIMS.map(d=>{
+      const st = execStats(d.key);
+      return '<div class="row"><span class="lb">'+d.label+'</span><span class="bar"><div style="width:'+st.rate+'%"></div></span><span class="pct">'+st.rate+'%</span></div>';
+    }).join('') +
+    '<p class="hint" style="margin:8px 0 0">自己評価が上がっていなくても、行動実行率が伸びていれば成長は進んでいます。逆に自己評価だけ上がって行動がゼロの領域は要注意です。</p></div>';
+  let tableHtml = '<table class="scores"><thead><tr><th>領域</th>'+(prev?'<th>前回</th>':'')+'<th>今回</th>'+(prev?'<th>変化</th>':'')+'<th>行動実行率</th></tr></thead><tbody>';
+  DIMS.forEach(d=>{
+    const dd = prev ? (cur.scores[d.key]-prev.scores[d.key]) : 0;
+    tableHtml += '<tr><td>'+d.label+'</td>'+(prev?'<td>'+prev.scores[d.key].toFixed(1)+'</td>':'')+'<td>'+cur.scores[d.key].toFixed(1)+'</td>'+(prev?'<td>'+(dd>0?'+':'')+dd.toFixed(1)+'</td>':'')+'<td>'+execStats(d.key).rate+'%</td></tr>';
+  });
+  tableHtml += '</tbody></table>';
+
+  // 足りていないスキルの伸ばし方アドバイス（ゴール重要度 × 伸びしろで優先度づけ）
+  const weak = priorities(cur).filter(p=>p.score < 4.5).slice(0,3);
+  const adviceHtml = weak.length ?
+    '<h3 class="advice-head">スコアの伸ばし方アドバイス</h3>' +
+    '<p class="advice-cap">いまのゴール「'+GOAL_LABELS[cur.goal]+'」に対して優先度が高い順です。実行はマンダラチャートのマスと連動しています。</p>' +
+    '<div class="advice-list">' + weak.map((p,i)=>{
+      const a = ADVICE[p.key], st = execStats(p.key);
+      return '<div class="advice"><h4>'+(i+1)+'. '+p.label+'</h4>' +
+        '<div class="meta">自己評価 '+p.score.toFixed(1)+' / 5.0 ・ 行動実行率 '+st.rate+'%</div>' +
+        '<p><span class="tag">学ぶ</span>'+a.learn+'</p>' +
+        '<p><span class="tag">動く</span>'+a.do+'</p></div>';
+    }).join('') + '</div>' : '';
+
+  // マンダラの取り組みメモ履歴を時系列一覧として転記
+  const entries = allNoteEntries();
+  const logHtml = entries.length ?
+    '<h3 class="advice-head">取り組み記録（マンダラのメモ履歴）</h3>' +
+    '<p class="advice-cap">いつ・どの領域で・何に取り組んだかの時系列一覧です。記録するたびにここへ転記されます。</p>' +
+    '<ul class="log-list">' + entries.slice(0,30).map(n=>
+      '<li><span class="dt">'+fmtDate(n.at)+'</span><span class="chip">'+n.dim+'</span><span>'+escapeHtml(n.text)+'</span></li>'
+    ).join('') + '</ul>' +
+    (entries.length > 30 ? '<p class="note">直近30件を表示しています（全'+entries.length+'件）</p>' : '') : '';
+
+  box.innerHTML =
+    '<div class="legend">' +
+      '<span class="key"><span class="sw" style="background:var(--now)"></span>今回（'+fmtDate(cur.takenAt)+'）</span>' +
+      (prev?'<span class="key"><span class="sw" style="background:var(--prev)"></span>前回（'+fmtDate(prev.takenAt)+'）</span>':'') +
+    '</div>' +
+    '<div class="ring-layout"><div id="radarBox">'+svg+'<div id="tooltip"></div></div>' +
+    '<div>'+diffHtml+histHtml+execHtml+'</div></div>' + tableHtml + adviceHtml + logHtml;
+
+  // tooltip
+  const radarBox = document.getElementById('radarBox');
+  const tip = document.getElementById('tooltip');
+  radarBox.querySelectorAll('.hit').forEach(c=>{
+    c.addEventListener('mousemove', ev=>{
+      const i = Number(c.dataset.i), d = DIMS[i];
+      let t = d.label + '：今回 ' + cur.scores[d.key].toFixed(1);
+      if(prev) t += ' ／ 前回 ' + prev.scores[d.key].toFixed(1);
+      tip.textContent = t;
+      const r = radarBox.getBoundingClientRect();
+      tip.style.left = (ev.clientX - r.left + 14) + 'px';
+      tip.style.top  = (ev.clientY - r.top - 10) + 'px';
+      tip.style.opacity = 1;
+    });
+    c.addEventListener('mouseleave', ()=>{ tip.style.opacity = 0; });
+  });
+}
+
+/* ---------- job match（スキル適合 70% × 資質適合 30%） ---------- */
+function coverageFit(profile, ideal){
+  let need = 0, met = 0;
+  Object.keys(ideal).forEach(k=>{
+    const iv = ideal[k], w = iv; // importance = ideal level
+    need += w * iv;
+    met  += w * Math.min(profile[k] != null ? profile[k] : 0, iv);
+  });
+  return Math.round(met / need * 100);
+}
+/* 資質適合: 6軸それぞれの位置と職種の理想位置の距離から算出（最大差=4/軸） */
+function axesFit(pos, ideal){
+  let diff = 0;
+  AXES.forEach(a=>{ diff += Math.abs((pos[a.key] || 0) - ideal[a.key]); });
+  return Math.round((1 - diff / (AXES.length * 4)) * 100);
+}
+function fitFor(rec, job){
+  const skill = coverageFit(rec.scores, job.ideal);
+  if(!rec.axes) return {total:skill, skill, trait:null};
+  const trait = axesFit(rec.axes, job.axes);
+  return {total: Math.round(skill*0.7 + trait*0.3), skill, trait};
+}
+function renderJobs(){
+  const box = document.getElementById('jobsWrap');
+  const rec = latest();
+  if(!rec){ box.innerHTML = '<div class="empty">まだ診断がありません。診断を完了すると適職マッチが表示されます。</div>'; return; }
+  const ranked = JOBS.map(j=>({...j, f:fitFor(rec,j)})).sort((a,b)=>b.f.total-a.f.total);
+  const top3 = ranked.slice(0,3);
+  // 現在地 → 目標 のサマリー
+  const cj = (rec.meta && rec.meta.current) || {};
+  const curBits = [cj.industry, cj.jobTitle, cj.role].filter(Boolean);
+  const tgtBits = [];
+  if(rec.meta && rec.meta.ageTarget) tgtBits.push(rec.meta.ageTarget+'までに');
+  if(rec.meta && rec.meta.income) tgtBits.push('年収'+rec.meta.income);
+  tgtBits.push(GOAL_LABELS[rec.goal]);
+  const summaryStrip = curBits.length ?
+    '<div class="exec-summary" style="margin-bottom:16px">' +
+      '<span>現在地 <strong style="font-size:14px">'+curBits.join(' / ')+'</strong></span>' +
+      '<span>→ 目標 <strong style="font-size:14px">'+tgtBits.join('・')+'</strong></span>' +
+      (cj.workDesc ? '<span style="flex-basis:100%; font-size:12px">'+escapeHtml(cj.workDesc)+'</span>' : '') +
+    '</div>' : '';
+  let traitProfile = '';
+  if(rec.axes){
+    const axisRows = AXES.map(a=>{
+      const pos = rec.axes[a.key] || 0;
+      const leftOn = pos <= -1, rightOn = pos >= 1;
+      const pct = (pos + 2) / 4 * 100;
+      return '<div class="axis-row">' +
+        '<div class="axis-side l"><span class="axis-pole'+(leftOn?' on':'')+'">'+(leftOn?'★ ':'')+a.left+'</span><span class="axis-desc">'+a.ldesc+'</span></div>' +
+        '<div class="axis-track"><span class="mid"></span><span class="dot" style="left:'+pct+'%"></span></div>' +
+        '<div class="axis-side r"><span class="axis-pole'+(rightOn?' on':'')+'">'+a.right+(rightOn?' ★':'')+'</span><span class="axis-desc">'+a.rdesc+'</span></div>' +
+        '</div>';
+    }).join('');
+    const feats = AXES.map(a=>{
+      const pos = rec.axes[a.key] || 0;
+      return {pole: pos <= 0 ? a.left : a.right, mag: Math.abs(pos)};
+    }).filter(f=>f.mag > 0).sort((x,y)=>y.mag-x.mag).slice(0,3);
+    const featHtml = feats.length ?
+      '<h3 class="advice-head" style="margin-top:18px">あなたの特徴的な資質</h3>' +
+      '<p class="advice-cap">傾向が強く出た上位3つの資質です。資質に良し悪しはなく、強みと注意点のセットで理解してください。</p>' +
+      '<div class="advice-list">' + feats.map(f=>{
+        const n = POLE_NOTES[f.pole];
+        return '<div class="advice"><h4>'+f.pole+'</h4>' +
+          '<p><span class="tag">強み</span>'+n.tsuyomi+'</p>' +
+          '<p><span class="tag chui">注意点</span>'+n.chui+'</p></div>';
+      }).join('') + '</div>' : '';
+    traitProfile =
+      '<div class="axes-box"><h3 style="font-size:14.5px; margin:0 0 2px">あなたの資質分析（考え方の傾向）</h3>' +
+      '<p class="advice-cap" style="margin-bottom:8px">左右どちらの傾向もそれぞれ強みです。★は特に強く出ている資質。</p>' +
+      axisRows + '</div>' + featHtml +
+      (feats.length ? '<div style="margin-bottom:20px"></div>' : '');
+  }
+  const interests = (rec.meta && rec.meta.interests) || [];
+  const cards = top3.map((j,idx)=>{
+    const strengths = DIMS.filter(d=>rec.scores[d.key] >= j.ideal[d.key] && j.ideal[d.key] >= 3.5).map(d=>d.label);
+    const traitStrengths = rec.axes ? AXES.filter(a=>{
+      const pos = rec.axes[a.key] || 0, ideal = j.axes[a.key];
+      return Math.abs(pos) >= 1 && Math.abs(ideal) >= 1 && Math.sign(pos) === Math.sign(ideal);
+    }).map(a=>'資質: '+((rec.axes[a.key]||0) < 0 ? a.left : a.right)) : [];
+    const gaps = DIMS.map(d=>({label:d.label, gap:j.ideal[d.key]-rec.scores[d.key]}))
+      .filter(x=>x.gap > 0.4).sort((a,b)=>b.gap-a.gap).slice(0,3);
+    const sub = j.f.trait != null ? '<p class="chip-cap" style="margin-top:2px">スキル適合 '+j.f.skill+'% ・ 資質適合 '+j.f.trait+'%</p>' : '';
+    const star = interests.includes(j.label) ? ' <span class="chip">★興味あり</span>' : '';
+    return '<div class="job'+(idx===0?' top':'')+'">' +
+      '<div class="rank">MATCH #'+(idx+1)+star+'</div><h3>'+j.label+'</h3>' +
+      '<span class="fitpct">'+j.f.total+'%</span><div class="fitbar"><div style="width:'+j.f.total+'%"></div></div>' + sub +
+      ((strengths.length||traitStrengths.length)?'<p class="chip-cap">いまの強みが活きる領域</p><div class="chips">'+strengths.map(s=>'<span class="chip">'+s+'</span>').join('')+traitStrengths.map(s=>'<span class="chip">'+s+'</span>').join('')+'</div>':'') +
+      (gaps.length?'<p class="chip-cap">届くために伸ばす領域（マンダラと連動）</p><div class="chips">'+gaps.map(g=>'<span class="chip gap">'+g.label+' +'+g.gap.toFixed(1)+'</span>').join('')+'</div>':'') +
+      '</div>';
+  }).join('');
+  // 興味のある職種 × AI で市場価値を上げる
+  const interestHtml = interests.length ?
+    '<h3 class="advice-head">興味のある職種 × AI で市場価値を上げる</h3>' +
+    '<p class="advice-cap">あなたが選んだ職種について、AIスキルを掛け合わせて市場価値を上げる道筋です。</p>' +
+    '<div class="advice-list">' + interests.map(label=>{
+      const j = ranked.find(x=>x.label === label);
+      if(!j) return '';
+      const rankIdx = ranked.indexOf(j) + 1;
+      const gaps = DIMS.map(d=>({label:d.label, gap:j.ideal[d.key]-rec.scores[d.key]}))
+        .filter(x=>x.gap > 0.4).sort((a,b)=>b.gap-a.gap).slice(0,2);
+      return '<div class="advice"><h4>'+label+'</h4>' +
+        '<div class="meta">総合適合 '+j.f.total+'%（全8職種中 '+rankIdx+'位）'+(rankIdx<=3?' — 適性も高い有望ルートです':'')+'</div>' +
+        '<p><span class="tag">AI×価値</span>'+AI_VALUE[label]+'</p>' +
+        (gaps.length?'<p><span class="tag">近づくには</span>'+gaps.map(g=>g.label+'（あと+'+g.gap.toFixed(1)+'）').join('・')+' をマンダラで重点強化。</p>':'<p><span class="tag">近づくには</span>スキル面は既に水準到達。実績づくりと発信に集中しましょう。</p>') +
+        '</div>';
+    }).join('') + '</div>' : '';
+  let table = '<table class="scores" style="margin-top:18px"><thead><tr><th>職種</th><th>総合適合</th><th>スキル</th><th>資質</th><th>興味</th></tr></thead><tbody>' +
+    ranked.map(j=>'<tr><td>'+j.label+'</td><td>'+j.f.total+'%</td><td>'+j.f.skill+'%</td><td>'+(j.f.trait!=null?j.f.trait+'%':'—')+'</td><td>'+(interests.includes(j.label)?'★':'')+'</td></tr>').join('') + '</tbody></table>';
+  const goalBits = [];
+  if(rec.meta && rec.meta.ageTarget) goalBits.push(rec.meta.ageTarget+'までに');
+  if(rec.meta && rec.meta.income) goalBits.push('年収'+rec.meta.income);
+  const goalLine = goalBits.length ? 'あなたの目標「'+goalBits.join('・')+'」の実現に向けて、' : '';
+  const cta = '<div class="cta-band">' +
+    '<p><strong>この診断結果をもとに、キャリアのプロと話してみませんか？</strong><br>'+goalLine+'BizCareerのキャリアアドバイザーが、あなたのスキルプロファイルと興味に合うAI関連求人をご紹介します（無料）。</p>' +
+    '<button class="btn primary" id="btnCareer">無料キャリア相談を予約する</button></div>' +
+    '<p class="note">※プロトタイプのため相談予約は未接続です。本実装ではBizCareer相談フォームへ、診断結果を添えて連携します。職種プロファイルはBizCareerのRA/CAと擦り合わせて調整予定。</p>';
+  box.innerHTML = summaryStrip + traitProfile + (cards ? '<div class="job-cards">'+cards+'</div>'+interestHtml+table+cta : '');
+  const btn = document.getElementById('btnCareer');
+  if(btn) btn.addEventListener('click', ()=>{ btn.textContent = '本実装で相談フォームに接続されます'; });
+}
+
+/* 2回目以降: 現職情報を前回診断から引き継ぐ（変わっていなければスキップでOK） */
+function prefillCurrentJob(){
+  const rec = latest();
+  const c = rec && rec.meta && rec.meta.current;
+  const note = document.getElementById('curPrefillNote');
+  const has = !!(c && (c.industry || c.jobTitle || c.role || c.workDesc));
+  document.getElementById('curIndustry').value = has ? (c.industry || '') : '';
+  document.getElementById('curJob').value      = has ? (c.jobTitle || '') : '';
+  document.getElementById('curRole').value     = has ? (c.role || '') : '';
+  document.getElementById('curWork').value     = has ? (c.workDesc || '') : '';
+  if(has){
+    note.textContent = '✔ 前回の診断（'+fmtDate(rec.takenAt)+'）の現職情報を引き継いでいます。変わっていなければこのステップはスキップでOK。転職・異動した場合は書き換えてください。';
+    note.style.display = 'block';
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+function renderAll(){ renderMandala(); renderRing(); renderJobs(); prefillCurrentJob(); }
+renderAll();
+</script>

@@ -333,6 +333,17 @@
       <h2>いまの仕事を教えてください</h2>
       <p class="hint">現在地がわかると、ビジョンとのギャップ＝伸ばすべきスキルがより正確になります。キャリア相談の際の基礎情報にもなります。</p>
       <p class="hint" id="curPrefillNote" style="display:none; color:var(--accent-ink); font-weight:600"></p>
+      <div class="vgrid" style="margin-top:0; margin-bottom:14px">
+        <div class="fld">
+          <label for="memName">お名前（会員名・ニックネーム可）<span style="color:var(--down)"> *</span></label>
+          <input type="text" id="memName" placeholder="例: 山田 太郎" autocomplete="name">
+        </div>
+        <div class="fld">
+          <label for="memEmail">メールアドレス（サロン登録のもの）<span style="color:var(--down)"> *</span></label>
+          <input type="text" id="memEmail" placeholder="例: taro@example.com" autocomplete="email" inputmode="email">
+        </div>
+      </div>
+      <p class="hint" style="margin:-6px 0 14px">診断結果は運営（Axel Salon）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは会員の照合キーです。</p>
       <div class="vgrid">
         <div class="fld">
           <label for="curIndustry">業界</label>
@@ -673,7 +684,7 @@ DIMS.forEach(d=> QUESTIONS[d.key].forEach((q,i)=> WIZ_ITEMS.push({id:'q_'+d.key+
 [0,1].forEach(round=> AXES.forEach(a=> WIZ_ITEMS.push({id:'t_'+a.key+'_'+round, part:'trait', dim:'', text:AXIS_QUESTIONS[a.key][round]})));
 const SKILL_N = WIZ_ITEMS.filter(x=>x.part==='skill').length;   // 16
 const TRAIT_N = WIZ_ITEMS.length - SKILL_N;                      // 12
-const FORM_IDS = ['curIndustry','curJob','curRole','curWork','vision','ageTarget','income'];
+const FORM_IDS = ['memName','memEmail','curIndustry','curJob','curRole','curWork','vision','ageTarget','income'];
 
 /* mode: 'full'=28問 / 'skill'=スキル16問のみ（資質分析は前回の結果を引き継ぐ。2回目以降のみ選べる） */
 let wiz = {idx:0, answers:{}, form:null, mode:'full'};
@@ -731,7 +742,8 @@ function updateWizStartStat(){
 document.getElementById('btnWizStart').addEventListener('click', ()=>{
   const err = document.getElementById('formErr');
   const visionEl = document.getElementById('vision');
-  if(!visionEl.value.trim()){ err.style.display = 'block'; visionEl.focus(); visionEl.scrollIntoView({block:'center'}); return; }
+  const miss = firstMissingRequired();
+  if(miss){ err.textContent = miss.msg; err.style.display = 'block'; miss.el.focus(); miss.el.scrollIntoView({block:'center'}); return; }
   err.style.display = 'none';
   wiz.form = snapshotForm();
   wiz.mode = selectedMode();
@@ -818,17 +830,25 @@ document.addEventListener('keydown', e=>{
   else if(e.key === 'ArrowRight'){ const b = document.getElementById('wizNext'); if(b && !b.disabled) b.click(); }
 });
 
+/* 必須項目（お名前・メール・ビジョン）の未入力チェック。最初に見つかった不足を返す */
+function firstMissingRequired(){
+  const name = document.getElementById('memName'), mail = document.getElementById('memEmail'), vis = document.getElementById('vision');
+  if(!name.value.trim()) return {el:name, msg:'お名前（STEP 1）を入力してからはじめてください'};
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.value.trim())) return {el:mail, msg:'メールアドレス（STEP 1）を正しく入力してからはじめてください'};
+  if(!vis.value.trim()) return {el:vis, msg:'ビジョン（STEP 2）を入力してからはじめてください'};
+  return null;
+}
 function submitDiagnosis(){
-  const visionEl = document.getElementById('vision');
-  const vision = visionEl.value.trim();
-  if(!vision){
+  const miss = firstMissingRequired();
+  if(miss){
     activate('diag');
     const err = document.getElementById('formErr');
-    err.textContent = 'ビジョン（STEP 2）が未入力です。入力してから、もう一度「回答を確認して診断する」を押してください';
+    err.textContent = miss.msg.replace('からはじめてください', 'から、もう一度「回答を確認して診断する」を押してください');
     err.style.display = 'block';
-    visionEl.focus(); visionEl.scrollIntoView({block:'center'});
+    miss.el.focus(); miss.el.scrollIntoView({block:'center'});
     return;
   }
+  const vision = document.getElementById('vision').value.trim();
   const pa = prevAxesRec();
   if(wiz.mode === 'skill' && !pa) wiz.mode = 'full';   // 引き継ぎ元がなければ全問必須
   const missing = wizItems().findIndex(x=> wiz.answers[x.id] == null);
@@ -854,6 +874,7 @@ function submitDiagnosis(){
   }
   const ageVal = document.getElementById('ageTarget').value.trim();
   const meta = {
+    member: {name: document.getElementById('memName').value.trim(), email: document.getElementById('memEmail').value.trim().toLowerCase()},
     ageTarget: ageVal ? ageVal + '歳' : '',
     income: document.getElementById('income').value,
     interests: Array.from(document.querySelectorAll('input[name=interest]:checked')).map(el=>el.value),
@@ -869,6 +890,7 @@ function submitDiagnosis(){
   if(axesFrom) rec.axesFrom = axesFrom;
   h.push(rec);
   saveHistory(h);
+  enqueueSync(buildPayload(rec, h.length));   // 運営の管理シートへ記録（失敗時は次回表示時に再送）
   clearDraft();
   renderModeSelector();
   updateWizStartStat();
@@ -914,12 +936,79 @@ document.getElementById('btnReset').addEventListener('click', ()=>{
   localStorage.removeItem(ACT_KEY);
   localStorage.removeItem(NOTE_KEY);
   localStorage.removeItem(CUSTOM_KEY);
+  localStorage.removeItem(SYNC_QUEUE_KEY);
+  localStorage.removeItem(SYNC_AT_KEY);
   clearDraft();
   editing = false;
   updateWizStartStat();
   renderAll();
   activate('diag');
 });
+
+/* ---------- 管理シートへの記録（会員サイトができるまでの暫定バックエンド） ----------
+   診断完了時に GAS Web App へ JSON を POST → スプレッドシート「会員一覧」「診断ログ」に記録。
+   Content-Type は text/plain（CORSのプリフライトを避ける）。失敗時は端末に溜めて次回表示時に再送。
+   本実装では SYNC_URL を会員サイト管理画面のAPIに差し替える（payloadの形がAPI契約の下書き）。 */
+const SYNC_URL = 'https://script.google.com/macros/s/AKfycbyO9C0ROPftd2DigmFoezq-UzFcSvq7Jcdf04XamSv-1fKPonDh6pseb7Hbdwfgp-I-/exec';
+const SYNC_TOKEN = 'axel-compass-2026';
+const SYNC_QUEUE_KEY = 'axelCompassSyncQueue';
+const SYNC_AT_KEY = 'axelCompassSyncedAt';
+function loadQueue(){ try{ return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY)) || []; }catch(e){ return []; } }
+function saveQueue(q){ try{ localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(q)); }catch(e){} }
+/* 管理者が見る形に整えた送信データ（どうなりたい／何をしたい／どのスキルを伸ばすか＋スコア・適職・資質） */
+function buildPayload(rec, diagNo){
+  const m = (rec.meta && rec.meta.member) || {};
+  const pri = priorities(rec).slice(0,3).map(p=>({label:p.label, score:p.score}));
+  const jobs = JOBS.map(j=>({label:j.label, f:fitFor(rec,j)})).sort((a,b)=>b.f.total-a.f.total).slice(0,3)
+    .map(j=>({label:j.label, total:j.f.total, skill:j.f.skill, trait:j.f.trait}));
+  const traits = rec.axes ? AXES.map(a=>({pole:(rec.axes[a.key]||0) <= 0 ? a.left : a.right, mag:Math.abs(rec.axes[a.key]||0)}))
+    .filter(f=>f.mag>0).sort((x,y)=>y.mag-x.mag).slice(0,3).map(f=>f.pole) : [];
+  return {
+    token: SYNC_TOKEN, takenAt: rec.takenAt, diagNo: diagNo,
+    member: {name: m.name || '', email: m.email || ''},
+    current: (rec.meta && rec.meta.current) || {},
+    goal: rec.goal, goalLabel: GOAL_LABELS[rec.goal], vision: rec.vision,
+    ageTarget: (rec.meta && rec.meta.ageTarget) || '', income: (rec.meta && rec.meta.income) || '',
+    interests: (rec.meta && rec.meta.interests) || [],
+    scores: rec.scores, axes: rec.axes || null, axesFrom: rec.axesFrom || null,
+    focus: pri, jobsTop3: jobs, traits: traits,
+    execRate: execTotal().rate, customActionsCount: customCount(),
+    source: 'growth-compass-proto'
+  };
+}
+function enqueueSync(payload){
+  if(!payload.member.email) return;          // デモデータ・メール無しは送らない
+  const q = loadQueue(); q.push(payload); saveQueue(q);
+  flushSync();
+}
+let syncing = false;
+function flushSync(){
+  if(syncing || !SYNC_URL || SYNC_URL.indexOf('http') !== 0) return;
+  const q = loadQueue(); if(!q.length) return;
+  syncing = true;
+  const item = q[0];
+  fetch(SYNC_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(item)})
+    .then(r=>r.json())
+    .then(res=>{
+      if(res && res.ok){
+        const rest = loadQueue().filter(x=> !(x.takenAt === item.takenAt && x.member.email === item.member.email));
+        saveQueue(rest);
+        try{ localStorage.setItem(SYNC_AT_KEY, new Date().toISOString()); }catch(e){}
+        syncing = false;
+        renderSyncStatus();
+        if(rest.length) flushSync();
+      } else { syncing = false; renderSyncStatus(); }
+    })
+    .catch(()=>{ syncing = false; renderSyncStatus(); });
+}
+function syncStatusText(){
+  const q = loadQueue().length, at = localStorage.getItem(SYNC_AT_KEY);
+  if(!SYNC_URL || SYNC_URL.indexOf('http') !== 0) return '';
+  if(q) return '運営への記録: 送信待ち '+q+'件（次回表示時に再送）';
+  return at ? '運営への記録: 送信済み（'+fmtDate(at)+'）' : '';
+}
+function renderSyncStatus(){ const el = document.getElementById('syncStatus'); if(el) el.textContent = syncStatusText(); }
+window.addEventListener('online', flushSync);
 
 /* ---------- マンダラの手動編集（会員が自分でアクション文言を書き換える） ---------- */
 const CUSTOM_KEY = 'axelCompassCustomActions';   // {dimKey_j: '書き換えた文言'} 初期値と同じ/空なら保存しない
@@ -1023,6 +1112,7 @@ function renderMandala(){
       '<span>マスをクリック: 未着手 → 実行中 → 習慣化</span>' +
       '<span>各領域の下のメモに取り組んだことを記録 → スキルスコアの一覧に転記</span>' +
       '<span>診断日: '+fmtDate(rec.takenAt)+'</span>' +
+      '<span id="syncStatus">'+syncStatusText()+'</span>' +
     '</div>';
 }
 const mandalaWrap = document.getElementById('mandalaWrap');
@@ -1326,6 +1416,9 @@ function prefillCurrentJob(){
   const c = rec && rec.meta && rec.meta.current;
   const note = document.getElementById('curPrefillNote');
   const has = !!(c && (c.industry || c.jobTitle || c.role || c.workDesc));
+  const m = (rec && rec.meta && rec.meta.member) || {};
+  document.getElementById('memName').value  = m.name || '';
+  document.getElementById('memEmail').value = m.email || '';
   document.getElementById('curIndustry').value = has ? (c.industry || '') : '';
   document.getElementById('curJob').value      = has ? (c.jobTitle || '') : '';
   document.getElementById('curRole').value     = has ? (c.role || '') : '';
@@ -1346,4 +1439,5 @@ restoreForm(wiz.form);
 renderModeSelector();
 wiz.mode = selectedMode();
 updateWizStartStat();
+flushSync();   // 前回送れなかった診断結果があれば再送
 </script>

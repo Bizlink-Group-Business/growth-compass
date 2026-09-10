@@ -343,7 +343,7 @@
           <input type="text" id="memEmail" placeholder="例: taro@example.com" autocomplete="email" inputmode="email">
         </div>
       </div>
-      <p class="hint" style="margin:-6px 0 14px">診断結果は運営（Axel Salon）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは会員の照合キーです。</p>
+      <p class="hint" style="margin:-6px 0 14px">診断結果と、マンダラの実行状況・取り組みメモは運営（Axel Salon）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは会員の照合キーです。<strong>体調や家庭の事情など、共有したくないことはメモに書かないでください。</strong></p>
       <div class="vgrid">
         <div class="fld">
           <label for="curIndustry">業界</label>
@@ -435,7 +435,7 @@
     <div class="card">
       <p class="eyebrow">MANDALA CHART</p>
       <h2>あなたの成長マンダラ</h2>
-      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。<br>アクションの文言は自動生成ですが、<strong>「マスの内容を編集」から自分の状況に合わせて書き換えられます</strong>（書き換えたマスには左上に印がつき、実行状況はそのまま引き継がれます）。</p>
+      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。<br>アクションの文言は自動生成ですが、<strong>「マスの内容を編集」から自分の状況に合わせて書き換えられます</strong>（書き換えたマスには左上に印がつき、実行状況はそのまま引き継がれます）。<br><span style="color:var(--muted)">マスの実行状況と取り組みメモは運営（Axel Salon）に共有され、キャリア相談に使います。体調や家庭の事情など、共有したくないことはメモに書かないでください。</span></p>
       <div id="mandalaWrap"></div>
     </div>
   </section>
@@ -891,6 +891,7 @@ function submitDiagnosis(){
   h.push(rec);
   saveHistory(h);
   enqueueSync(buildPayload(rec, h.length));   // 運営の管理シートへ記録（失敗時は次回表示時に再送）
+  const mp = buildMandalaPayload(); if(mp) enqueueSync(mp);   // マンダラの現状も添える
   clearDraft();
   renderModeSelector();
   updateWizStartStat();
@@ -959,13 +960,19 @@ function saveQueue(q){ try{ localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(
 function buildPayload(rec, diagNo){
   const m = (rec.meta && rec.meta.member) || {};
   const pri = priorities(rec).slice(0,3).map(p=>({label:p.label, score:p.score}));
-  const jobs = JOBS.map(j=>({label:j.label, f:fitFor(rec,j)})).sort((a,b)=>b.f.total-a.f.total).slice(0,3)
-    .map(j=>({label:j.label, total:j.f.total, skill:j.f.skill, trait:j.f.trait}));
+  const ranked = JOBS.map(j=>({label:j.label, ideal:j.ideal, f:fitFor(rec,j)})).sort((a,b)=>b.f.total-a.f.total);
+  const jobsAll = ranked.map(j=>({label:j.label, total:j.f.total, skill:j.f.skill, trait:j.f.trait}));
+  const jobs = jobsAll.slice(0,3);
+  const topJobGaps = ranked.length ? DIMS.map(d=>({label:d.label, gap:Math.round((ranked[0].ideal[d.key]-rec.scores[d.key])*10)/10}))
+    .filter(x=>x.gap > 0.4).sort((a,b)=>b.gap-a.gap).slice(0,3) : [];
+  const execPerDim = {}; DIMS.forEach(d=>{ execPerDim[d.key] = execStats(d.key).rate; });
   const traits = rec.axes ? AXES.map(a=>({pole:(rec.axes[a.key]||0) <= 0 ? a.left : a.right, mag:Math.abs(rec.axes[a.key]||0)}))
     .filter(f=>f.mag>0).sort((x,y)=>y.mag-x.mag).slice(0,3).map(f=>f.pole) : [];
   return {
-    token: SYNC_TOKEN, takenAt: rec.takenAt, diagNo: diagNo,
+    token: SYNC_TOKEN, type: 'diagnosis', syncId: (m.email || '') + '|' + rec.takenAt,
+    takenAt: rec.takenAt, diagNo: diagNo,
     member: {name: m.name || '', email: m.email || ''},
+    jobsAll: jobsAll, topJobGaps: topJobGaps, execPerDim: execPerDim,
     current: (rec.meta && rec.meta.current) || {},
     goal: rec.goal, goalLabel: GOAL_LABELS[rec.goal], vision: rec.vision,
     ageTarget: (rec.meta && rec.meta.ageTarget) || '', income: (rec.meta && rec.meta.income) || '',
@@ -978,8 +985,41 @@ function buildPayload(rec, diagNo){
 }
 function enqueueSync(payload){
   if(!payload.member.email) return;          // デモデータ・メール無しは送らない
-  const q = loadQueue(); q.push(payload); saveQueue(q);
+  // 同じsyncIdの送信待ちがあれば差し替え（マンダラ状況は常に最新1件だけ送る）
+  const q = loadQueue().filter(x=> x.syncId !== payload.syncId);
+  q.push(payload); saveQueue(q);
   flushSync();
+}
+/* 会員情報（直近の診断から）。診断前は同期しない */
+function syncMember(){
+  const rec = latest(); const m = rec && rec.meta && rec.meta.member;
+  return (m && m.email) ? {name: m.name || '', email: m.email} : null;
+}
+/* マンダラの実行状況スナップショット（64マスの状態・書き換え文言・領域別実行率） */
+function buildMandalaPayload(){
+  const m = syncMember(); if(!m) return null;
+  const actions = {};
+  DIMS.forEach(d=>{
+    actions[d.key] = ACTIONS[d.key].map((_,j)=>({j:j, text:actionText(d.key,j), state:actState(d.key+'_'+j), custom:isCustom(d.key,j)}))
+      .filter(a=> a.state > 0 || a.custom);   // 未着手かつ未編集のマスは送らない（容量節約）
+  });
+  const per = {}; DIMS.forEach(d=>{ per[d.key] = execStats(d.key).rate; });
+  return {token: SYNC_TOKEN, type:'mandala', syncId:'mandala|'+m.email, member:m, at:new Date().toISOString(),
+    actions:actions, execPerDim:per, execRate:execTotal().rate, customActionsCount:customCount(), source:'growth-compass-proto'};
+}
+/* 取り組みメモ1件 */
+function buildNotePayload(dimKey, note){
+  const m = syncMember(); if(!m || !note || !note.text) return null;
+  const d = DIMS.find(x=>x.key===dimKey);
+  return {token: SYNC_TOKEN, type:'note', syncId: m.email+'|'+note.at+'|'+dimKey, member:m, at:note.at,
+    dim:dimKey, dimLabel: d ? d.label : dimKey, text:note.text, source:'growth-compass-proto'};
+}
+/* マスの連打対策: 最後の操作から4秒後にまとめて1回送る */
+let mandalaSyncTimer = null;
+function scheduleMandalaSync(){
+  if(!syncMember()) return;
+  clearTimeout(mandalaSyncTimer);
+  mandalaSyncTimer = setTimeout(()=>{ const p = buildMandalaPayload(); if(p) enqueueSync(p); }, 4000);
 }
 let syncing = false;
 function flushSync(){
@@ -991,7 +1031,7 @@ function flushSync(){
     .then(r=>r.json())
     .then(res=>{
       if(res && res.ok){
-        const rest = loadQueue().filter(x=> !(x.takenAt === item.takenAt && x.member.email === item.member.email));
+        const rest = loadQueue().filter(x=> x.syncId ? x.syncId !== item.syncId : !(x.takenAt === item.takenAt && x.member.email === item.member.email));
         saveQueue(rest);
         try{ localStorage.setItem(SYNC_AT_KEY, new Date().toISOString()); }catch(e){}
         syncing = false;
@@ -1119,22 +1159,25 @@ const mandalaWrap = document.getElementById('mandalaWrap');
 mandalaWrap.addEventListener('click', e=>{
   // 編集モードの切り替え・初期値に戻す
   if(e.target.closest('#btnEdit')){ editing = true; renderMandala(); return; }
-  if(e.target.closest('#btnEditDone')){ editing = false; renderMandala(); return; }
+  if(e.target.closest('#btnEditDone')){ editing = false; renderMandala(); scheduleMandalaSync(); return; }
   if(e.target.closest('#btnResetAllCustom')){
-    if(confirm('自分で書き換えたマスをすべて初期値（自動生成の文言）に戻します。実行状況の記録は残ります。よろしいですか？')){ resetCustom(); renderMandala(); }
+    if(confirm('自分で書き換えたマスをすべて初期値（自動生成の文言）に戻します。実行状況の記録は残ります。よろしいですか？')){ resetCustom(); renderMandala(); scheduleMandalaSync(); }
     return;
   }
   const rb = e.target.closest('button[data-resetblock]');
   if(rb){
     const key = rb.dataset.resetblock, label = DIMS.find(d=>d.key===key).label;
-    if(confirm('「'+label+'」の8マスを初期値に戻します。よろしいですか？')){ resetCustom(key); renderMandala(); }
+    if(confirm('「'+label+'」の8マスを初期値に戻します。よろしいですか？')){ resetCustom(key); renderMandala(); scheduleMandalaSync(); }
     return;
   }
   const save = e.target.closest('button[data-notesave]');
   if(save){
     const k = save.dataset.notesave;
     const ta = document.querySelector('textarea[data-note="'+k+'"]');
-    if(ta && saveNote(k, ta.value)){ renderMandala(); renderRing(); }
+    if(ta && saveNote(k, ta.value)){
+      const np = buildNotePayload(k, latestNote(k)); if(np) enqueueSync(np);   // 運営の「取り組みメモ」に記録
+      renderMandala(); renderRing();
+    }
     return;
   }
   const b = e.target.closest('button.m-cell.act');
@@ -1142,6 +1185,7 @@ mandalaWrap.addEventListener('click', e=>{
   cycleAct(b.dataset.act);
   renderMandala();
   renderRing();
+  scheduleMandalaSync();
 });
 // 編集モード: 入力のたびに自動保存（初期値と同じ／空に戻したら保存を消す）
 mandalaWrap.addEventListener('input', e=>{

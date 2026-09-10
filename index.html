@@ -86,6 +86,9 @@
   }
   .goal-grid label:has(input:checked){border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
   .goal-grid input{accent-color:var(--accent)}
+  .goal-grid label small{display:block; font-weight:400; color:var(--muted); font-size:11.5px; line-height:1.5}
+  .goal-grid label:has(input:checked) small{color:var(--accent-ink)}
+  .wiz-early{color:var(--muted); font-size:12px; margin:12px 0 0; border-top:1px dashed var(--border); padding-top:10px}
   .vgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:16px}
   .fld label{display:block; font-size:12.5px; color:var(--muted); font-weight:600; margin-bottom:4px}
 
@@ -399,6 +402,10 @@
       <h2>スキルセルフチェック（16問）＋ 資質分析（12問）</h2>
       <p class="hint">ここから先は<strong>1問ずつ</strong>画面に表示されます（全28問・約5分）。回答を選ぶと自動で次の設問に進み、<strong>「戻る」でいつでも前の設問に戻って答え直せます</strong>。途中でページを閉じても回答は保存され、続きから再開できます。</p>
       <p class="hint">スキルセルフチェック（STEP 3）は、それぞれの文が<strong>事実として</strong>当てはまるかを1〜5で答えます。「得意だと思う」ではなく実際の行動・回数で答えるのがコツです。資質分析（STEP 4）は<strong>考え方の傾向</strong>を6つの軸（12種の資質）で見ます。資質に良し悪しはないので、深く考えず直感で。</p>
+      <div id="wizModeWrap" style="display:none">
+        <p class="hint" style="margin-top:14px; margin-bottom:6px">今回の診断範囲を選んでください。資質（考え方の傾向）は短期間で変わりにくいため、<strong>2回目以降はスキルセルフチェックだけ更新して、資質分析は前回の結果を引き継ぐ</strong>ことができます。</p>
+        <div class="goal-grid" id="wizMode"></div>
+      </div>
       <div class="wiz-start">
         <button class="btn primary" id="btnWizStart">セルフチェックをはじめる（28問）</button>
         <span class="stat" id="wizStartStat"></span>
@@ -668,16 +675,35 @@ const SKILL_N = WIZ_ITEMS.filter(x=>x.part==='skill').length;   // 16
 const TRAIT_N = WIZ_ITEMS.length - SKILL_N;                      // 12
 const FORM_IDS = ['curIndustry','curJob','curRole','curWork','vision','ageTarget','income'];
 
-let wiz = {idx:0, answers:{}, form:null};
+/* mode: 'full'=28問 / 'skill'=スキル16問のみ（資質分析は前回の結果を引き継ぐ。2回目以降のみ選べる） */
+let wiz = {idx:0, answers:{}, form:null, mode:'full'};
 function loadDraft(){
   try{
     const d = JSON.parse(localStorage.getItem(DRAFT_KEY));
-    if(d && d.answers) wiz = {idx:Math.min(d.idx||0, WIZ_ITEMS.length-1), answers:d.answers, form:d.form||null};
+    if(d && d.answers) wiz = {idx:Math.min(d.idx||0, WIZ_ITEMS.length-1), answers:d.answers, form:d.form||null, mode:d.mode==='skill'?'skill':'full'};
   }catch(e){}
 }
 function saveDraft(){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(wiz)); }catch(e){} }
-function clearDraft(){ wiz = {idx:0, answers:{}, form:null}; localStorage.removeItem(DRAFT_KEY); }
-function answeredCount(){ return WIZ_ITEMS.filter(x=> wiz.answers[x.id] != null).length; }
+function clearDraft(){ wiz = {idx:0, answers:{}, form:null, mode:'full'}; localStorage.removeItem(DRAFT_KEY); }
+/* 直近の資質分析つき診断（引き継ぎ元）。axesFromがあればさらに元の日付を辿る */
+function prevAxesRec(){ const h = loadHistory(); for(let i=h.length-1; i>=0; i--){ if(h[i].axes) return h[i]; } return null; }
+function selectedMode(){ const r = document.querySelector('input[name=wizmode]:checked'); return (r && r.value==='skill' && prevAxesRec()) ? 'skill' : 'full'; }
+function wizItems(){ return wiz.mode==='skill' ? WIZ_ITEMS.slice(0, SKILL_N) : WIZ_ITEMS; }
+function answeredCount(items){ return (items || wizItems()).filter(x=> wiz.answers[x.id] != null).length; }
+function renderModeSelector(){
+  const pa = prevAxesRec(), wrap = document.getElementById('wizModeWrap'), box = document.getElementById('wizMode');
+  if(!pa){ wrap.style.display = 'none'; box.innerHTML = ''; updateWizStartStat(); return; }
+  // 選択中の値を維持。初期表示は下書きにモードが残っていればそれ、なければ「スキルのみ」を推奨として選択
+  const checked = document.querySelector('input[name=wizmode]:checked');
+  const cur = checked ? checked.value : (localStorage.getItem(DRAFT_KEY) && wiz.mode === 'full' ? 'full' : 'skill');
+  const from = fmtDate(pa.axesFrom || pa.takenAt);
+  box.innerHTML =
+    '<label><input type="radio" name="wizmode" value="skill"'+(cur==='skill'?' checked':'')+'><span>スキルセルフチェックのみ更新（16問）<small>資質分析は前回（'+from+'）の結果を引き継ぐ。約3分</small></span></label>' +
+    '<label><input type="radio" name="wizmode" value="full"'+(cur==='full'?' checked':'')+'><span>全28問で診断<small>資質分析も答え直す。約5分</small></span></label>';
+  wrap.style.display = 'block';
+  updateWizStartStat();   // 選択に合わせて開始ボタンの文言（16問／28問）を更新
+}
+document.getElementById('wizMode').addEventListener('change', ()=>{ wiz.mode = selectedMode(); saveDraft(); updateWizStartStat(); });
 function snapshotForm(){
   const f = {};
   FORM_IDS.forEach(id=> f[id] = document.getElementById(id).value);
@@ -693,9 +719,10 @@ function restoreForm(f){
   (f.interests || []).forEach(v=>{ const c = document.querySelector('input[name=interest][value="'+v+'"]'); if(c) c.checked = true; });
 }
 function updateWizStartStat(){
-  const n = answeredCount(), total = WIZ_ITEMS.length;
+  wiz.mode = selectedMode();
+  const items = wizItems(), n = answeredCount(items), total = items.length;
   const btn = document.getElementById('btnWizStart'), st = document.getElementById('wizStartStat');
-  if(n === 0){ btn.textContent = 'セルフチェックをはじめる（'+total+'問）'; st.textContent = ''; return; }
+  if(n === 0){ btn.textContent = (wiz.mode==='skill' ? 'スキルセルフチェックをはじめる' : 'セルフチェックをはじめる')+'（'+total+'問）'; st.textContent = ''; return; }
   if(n >= total){ btn.textContent = '回答を確認して診断する'; st.innerHTML = '<strong>'+total+'/'+total+'問</strong> 回答済み。最後の設問から確認・答え直しができます。'; return; }
   btn.textContent = '続きから再開する（残り'+(total-n)+'問）';
   st.innerHTML = '<strong>'+n+'/'+total+'問</strong> 回答済み（途中保存）';
@@ -707,9 +734,11 @@ document.getElementById('btnWizStart').addEventListener('click', ()=>{
   if(!visionEl.value.trim()){ err.style.display = 'block'; visionEl.focus(); visionEl.scrollIntoView({block:'center'}); return; }
   err.style.display = 'none';
   wiz.form = snapshotForm();
+  wiz.mode = selectedMode();
   // 続きから: 最初の未回答設問へ（全問回答済みなら最後の設問へ）
-  const firstUn = WIZ_ITEMS.findIndex(x=> wiz.answers[x.id] == null);
-  wiz.idx = firstUn === -1 ? WIZ_ITEMS.length-1 : firstUn;
+  const items = wizItems();
+  const firstUn = items.findIndex(x=> wiz.answers[x.id] == null);
+  wiz.idx = firstUn === -1 ? items.length-1 : firstUn;
   saveDraft();
   renderWiz();
   activate('wiz');
@@ -718,18 +747,26 @@ document.getElementById('btnWizStart').addEventListener('click', ()=>{
 
 function renderWiz(){
   const box = document.getElementById('wizCard');
-  const n = WIZ_ITEMS.length, it = WIZ_ITEMS[wiz.idx], cur = wiz.answers[it.id];
+  const items = wizItems();
+  if(wiz.idx > items.length-1) wiz.idx = items.length-1;
+  const n = items.length, it = items[wiz.idx], cur = wiz.answers[it.id];
   const isSkill = it.part === 'skill';
   const partIdx = isSkill ? wiz.idx + 1 : wiz.idx - SKILL_N + 1;
   const isLast = wiz.idx === n - 1;
-  const done = answeredCount();
+  const done = answeredCount(items);
   const skillDone = WIZ_ITEMS.slice(0, SKILL_N).every(x=> wiz.answers[x.id] != null);
+  const pa = prevAxesRec();
+  // 全28問モードでもスキル16問目まで来たら、資質は前回のまま診断を終えられる（2回目以降のみ）
+  const canEarly = wiz.mode==='full' && pa && wiz.idx === SKILL_N-1 && cur != null;
+  const traitChip = wiz.mode==='skill'
+    ? '<span class="done">資質分析 前回（'+fmtDate(pa.axesFrom || pa.takenAt)+'）を引き継ぎ</span>'
+    : '<span class="'+(isSkill ? '' : 'on')+'">資質分析 '+(isSkill ? 0 : partIdx)+'/'+TRAIT_N+'</span>';
   box.innerHTML =
     '<p class="eyebrow">'+(isSkill ? 'STEP 3 — SELF CHECK' : 'STEP 4 — SELF ANALYSIS')+'</p>' +
     '<div class="wiz-prog"><span>'+(wiz.idx+1)+' / '+n+'</span><span class="bar"><div style="width:'+Math.round(done/n*100)+'%"></div></span><span>回答済 '+done+'問</span></div>' +
     '<div class="wiz-sec">' +
       '<span class="'+(isSkill ? 'on' : (skillDone ? 'done' : ''))+'">スキルセルフチェック '+(isSkill ? partIdx : SKILL_N)+'/'+SKILL_N+'</span>' +
-      '<span class="'+(isSkill ? '' : 'on')+'">資質分析 '+(isSkill ? 0 : partIdx)+'/'+TRAIT_N+'</span>' +
+      traitChip +
     '</div>' +
     '<p class="wiz-dim">'+(isSkill ? escapeHtml(it.dim)+' ・ 事実として当てはまりますか？' : '考え方の傾向 ・ 直感でお答えください')+'</p>' +
     '<p class="wiz-q" id="wizQ">'+escapeHtml(it.text)+'</p>' +
@@ -740,21 +777,26 @@ function renderWiz(){
       '<button type="button" class="btn ghost" id="wizBack">← 戻る'+(wiz.idx===0 ? '（入力画面へ）' : '')+'</button>' +
       '<div class="right"><span class="form-err" id="wizErr">未回答の設問があります</span>' +
       (isLast
-        ? '<button type="button" class="btn primary" id="wizSubmit"'+(cur==null ? ' disabled' : '')+'>診断してマンダラを生成する</button>'
+        ? '<button type="button" class="btn primary" id="wizSubmit"'+(cur==null ? ' disabled' : '')+'>診断してマンダラを生成する'+(wiz.mode==='skill' ? '（資質は前回のまま）' : '')+'</button>'
         : '<button type="button" class="btn ghost" id="wizNext"'+(cur==null ? ' disabled' : '')+'>次へ →</button>') +
       '</div>' +
     '</div>' +
+    (canEarly
+      ? '<p class="wiz-early">スキルセルフチェック16問はここまでです。資質は短期間で変わりにくいため、前回（'+fmtDate(pa.axesFrom || pa.takenAt)+'）の資質分析を引き継いで<strong>ここで診断を終えることもできます</strong>。答え直す場合は「次へ」で資質分析12問に進みます。<br>' +
+        '<button type="button" class="btn primary small" id="wizEarly" style="margin-top:8px">ここで診断する（資質は前回のまま）</button></p>'
+      : '') +
     '<p class="wiz-key">回答を選ぶと自動で次に進みます。答え直したいときは「戻る」で前の設問へ。キーボードの 1〜5 でも回答でき、← → で移動できます。</p>';
 }
 document.getElementById('wizCard').addEventListener('click', e=>{
   const opt = e.target.closest('.wiz-opts button');
   if(opt){
-    const it = WIZ_ITEMS[wiz.idx];
+    const items = wizItems(), it = items[wiz.idx];
     wiz.answers[it.id] = Number(opt.dataset.val);
     saveDraft();
-    // 選択の色を一瞬見せてから次へ（最後の設問はその場に留まり「診断する」を有効化）
+    // 選択の色を一瞬見せてから次へ（最後の設問と、離脱できる16問目はその場に留まる）
     document.querySelectorAll('.wiz-opts button').forEach(b=>{ b.classList.toggle('on', b===opt); b.setAttribute('aria-checked', b===opt); });
-    if(wiz.idx < WIZ_ITEMS.length-1){ setTimeout(()=>{ wiz.idx++; saveDraft(); renderWiz(); }, 160); }
+    const stay = wiz.idx === items.length-1 || (wiz.mode==='full' && prevAxesRec() && wiz.idx === SKILL_N-1);
+    if(!stay){ setTimeout(()=>{ wiz.idx++; saveDraft(); renderWiz(); }, 160); }
     else renderWiz();
     return;
   }
@@ -763,7 +805,8 @@ document.getElementById('wizCard').addEventListener('click', e=>{
     wiz.idx--; saveDraft(); renderWiz(); return;
   }
   const next = e.target.closest('#wizNext');
-  if(next){ if(!next.disabled && wiz.answers[WIZ_ITEMS[wiz.idx].id] != null){ wiz.idx++; saveDraft(); renderWiz(); } return; }
+  if(next){ if(!next.disabled && wiz.answers[wizItems()[wiz.idx].id] != null){ wiz.idx++; saveDraft(); renderWiz(); } return; }
+  if(e.target.closest('#wizEarly')){ wiz.mode = 'skill'; saveDraft(); submitDiagnosis(); return; }
   if(e.target.closest('#wizSubmit')) submitDiagnosis();
 });
 // キーボード操作: 1〜5で回答、←→で前後の設問へ
@@ -786,7 +829,9 @@ function submitDiagnosis(){
     visionEl.focus(); visionEl.scrollIntoView({block:'center'});
     return;
   }
-  const missing = WIZ_ITEMS.findIndex(x=> wiz.answers[x.id] == null);
+  const pa = prevAxesRec();
+  if(wiz.mode === 'skill' && !pa) wiz.mode = 'full';   // 引き継ぎ元がなければ全問必須
+  const missing = wizItems().findIndex(x=> wiz.answers[x.id] == null);
   if(missing !== -1){ wiz.idx = missing; saveDraft(); renderWiz(); document.getElementById('wizErr').style.display = 'inline'; return; }
   const goalEl = document.querySelector('input[name=goal]:checked');
   const goal = goalEl ? goalEl.value : 'tenshoku';
@@ -796,11 +841,17 @@ function submitDiagnosis(){
     QUESTIONS[d.key].forEach((_,i)=>{ sum += Number(wiz.answers['q_'+d.key+'_'+i]); });
     scores[d.key] = Math.round(sum / QUESTIONS[d.key].length * 10) / 10;
   });
-  /* 軸位置 = (右極スコア − 左極スコア) / 2 → -2.0（左寄り）〜 +2.0（右寄り） */
-  const axes = {};
-  AXES.forEach(a=>{
-    axes[a.key] = Math.round((Number(wiz.answers['t_'+a.key+'_1']) - Number(wiz.answers['t_'+a.key+'_0'])) / 2 * 10) / 10;
-  });
+  /* 軸位置 = (右極スコア − 左極スコア) / 2 → -2.0（左寄り）〜 +2.0（右寄り）
+     スキルのみ更新モードでは前回の資質分析をそのまま引き継ぎ、axesFrom に元の診断日を残す */
+  let axes = {}, axesFrom;
+  if(wiz.mode === 'skill'){
+    axes = Object.assign({}, pa.axes);
+    axesFrom = pa.axesFrom || pa.takenAt;
+  } else {
+    AXES.forEach(a=>{
+      axes[a.key] = Math.round((Number(wiz.answers['t_'+a.key+'_1']) - Number(wiz.answers['t_'+a.key+'_0'])) / 2 * 10) / 10;
+    });
+  }
   const ageVal = document.getElementById('ageTarget').value.trim();
   const meta = {
     ageTarget: ageVal ? ageVal + '歳' : '',
@@ -814,9 +865,12 @@ function submitDiagnosis(){
     }
   };
   const h = loadHistory();
-  h.push({takenAt:new Date().toISOString(), goal, vision, scores, axes, meta});
+  const rec = {takenAt:new Date().toISOString(), goal, vision, scores, axes, meta};
+  if(axesFrom) rec.axesFrom = axesFrom;
+  h.push(rec);
   saveHistory(h);
   clearDraft();
+  renderModeSelector();
   updateWizStartStat();
   renderAll();
   activate('mandala');
@@ -1213,7 +1267,7 @@ function renderJobs(){
       }).join('') + '</div>' : '';
     traitProfile =
       '<div class="axes-box"><h3 style="font-size:14.5px; margin:0 0 2px">あなたの資質分析（考え方の傾向）</h3>' +
-      '<p class="advice-cap" style="margin-bottom:8px">左右どちらの傾向もそれぞれ強みです。★は特に強く出ている資質。</p>' +
+      '<p class="advice-cap" style="margin-bottom:8px">左右どちらの傾向もそれぞれ強みです。★は特に強く出ている資質。'+(rec.axesFrom ? '<br><strong>'+fmtDate(rec.axesFrom)+' の資質分析結果を引き継いでいます</strong>（今回はスキルセルフチェックのみ更新）。答え直すときは診断で「全28問で診断」を選んでください。' : '')+'</p>' +
       axisRows + '</div>' + featHtml +
       (feats.length ? '<div style="margin-bottom:20px"></div>' : '');
   }
@@ -1284,10 +1338,12 @@ function prefillCurrentJob(){
   }
 }
 
-function renderAll(){ renderMandala(); renderRing(); renderJobs(); prefillCurrentJob(); }
+function renderAll(){ renderMandala(); renderRing(); renderJobs(); prefillCurrentJob(); renderModeSelector(); }
 renderAll();
 /* 途中保存した回答・入力があれば復元（前回診断の現職引き継ぎより下書きを優先） */
 loadDraft();
 restoreForm(wiz.form);
+renderModeSelector();
+wiz.mode = selectedMode();
 updateWizStartStat();
 </script>

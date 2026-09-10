@@ -89,20 +89,6 @@
   .vgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:16px}
   .fld label{display:block; font-size:12.5px; color:var(--muted); font-weight:600; margin-bottom:4px}
 
-  .qdim{margin-top:20px; border-top:1px solid var(--border); padding-top:16px}
-  .qdim h3{font-size:14.5px; margin:0 0 10px; color:var(--accent-ink)}
-  .q{display:flex; justify-content:space-between; gap:16px; align-items:center; padding:7px 0; flex-wrap:wrap}
-  .q p{margin:0; font-size:14px; flex:1 1 320px}
-  .likert{display:flex; gap:4px}
-  .likert label{
-    width:36px; height:32px; display:flex; align-items:center; justify-content:center;
-    border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:13px;
-    background:var(--surface); font-variant-numeric:tabular-nums;
-  }
-  .likert label:has(input:checked){background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700}
-  .likert input{position:absolute; opacity:0; width:0}
-  .likert-cap{display:flex; justify-content:flex-end; gap:14px; color:var(--muted); font-size:11.5px; margin-bottom:2px}
-
   .btn{
     appearance:none; font-family:inherit; font-size:14.5px; font-weight:700;
     border-radius:8px; padding:11px 22px; cursor:pointer; border:1px solid transparent;
@@ -266,6 +252,54 @@
   }
   .cta-band p{margin:0; font-size:14px; color:var(--accent-ink); max-width:56ch}
   .note{color:var(--muted); font-size:12px; margin-top:10px}
+
+  /* 設問ウィザード（1問ずつ表示） */
+  .wiz-start{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:6px}
+  .wiz-start .stat{color:var(--muted); font-size:13px}
+  .wiz-start .stat strong{color:var(--accent-ink); font-variant-numeric:tabular-nums}
+  .card.wiz{max-width:760px; margin:0 auto}
+  .wiz-prog{display:flex; align-items:center; gap:12px; font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .wiz-prog .bar{flex:1; height:6px; border-radius:3px; background:var(--surface2); overflow:hidden}
+  .wiz-prog .bar > div{height:100%; background:var(--accent); border-radius:3px; transition:width .2s}
+  .wiz-sec{display:flex; gap:8px; margin:14px 0 0; flex-wrap:wrap}
+  .wiz-sec span{font-size:11.5px; font-weight:700; letter-spacing:.04em; border-radius:999px; padding:3px 12px; background:var(--surface2); color:var(--muted); font-variant-numeric:tabular-nums}
+  .wiz-sec span.on{background:var(--accent-soft); color:var(--accent-ink)}
+  .wiz-sec span.done{background:var(--accent); color:#fff}
+  .wiz-dim{font-size:12.5px; color:var(--accent-ink); font-weight:700; margin:24px 0 4px}
+  .wiz-q{font-size:19px; font-weight:700; line-height:1.55; margin:0 0 22px; min-height:3.1em; text-wrap:balance}
+  .wiz-opts{display:grid; grid-template-columns:repeat(5,1fr); gap:8px}
+  .wiz-opts button{
+    appearance:none; font-family:inherit; cursor:pointer; border:1px solid var(--border); border-radius:10px;
+    background:var(--surface); color:var(--ink); padding:14px 6px 10px; display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .wiz-opts button .v{font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1}
+  .wiz-opts button .t{font-size:10.5px; color:var(--muted); line-height:1.3; text-align:center; min-height:2.6em}
+  .wiz-opts button:hover{border-color:var(--accent)}
+  .wiz-opts button.on{background:var(--accent); border-color:var(--accent); color:#fff}
+  .wiz-opts button.on .t{color:rgba(255,255,255,.85)}
+  .wiz-opts button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .wiz-foot{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:24px; flex-wrap:wrap}
+  .wiz-foot .right{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .wiz-key{color:var(--muted); font-size:11.5px; margin:14px 0 0}
+  .btn:disabled{opacity:.45; cursor:not-allowed}
+  @media (max-width:560px){ .wiz-opts{gap:5px} .wiz-opts button .t{display:none} .wiz-q{font-size:17px} }
+
+  /* マンダラ編集モード（マスの文言を手動で書き換え） */
+  .m-toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 14px}
+  .m-toolbar .sp{flex:1}
+  .m-toolbar .edit-note{font-size:12.5px; color:var(--accent-ink); font-weight:600}
+  .mandala.editing .m-block{border-style:dashed; border-color:var(--accent)}
+  .m-cell.editcell{padding:0; background:var(--surface); border:1px solid var(--border); align-items:stretch}
+  .m-cell.editcell textarea{
+    width:100%; min-height:56px; border:none; background:transparent; resize:none; border-radius:5px;
+    font-size:11px; line-height:1.45; padding:7px 8px; text-align:center; color:var(--ink); font-family:inherit;
+  }
+  .m-cell.editcell textarea:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+  .m-cell.editcell.custom{border-color:var(--prev)}
+  .m-cell.act .cu{position:absolute; left:3px; top:3px; width:6px; height:6px; border-radius:50%; background:var(--prev)}
+  .m-block-foot{display:flex; justify-content:flex-end}
+  .btn.link{background:none; border:none; color:var(--muted); font-size:11.5px; padding:2px 6px; font-weight:600; text-decoration:underline}
+  .btn.link:hover{color:var(--down)}
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
 
@@ -360,24 +394,22 @@
       <p class="hint" style="margin-top:14px">興味のある職種があれば選んでください（複数OK・任意）。その職種×AIで市場価値を上げる道筋を適職マッチで提案します。</p>
       <div class="goal-grid" id="interests"></div>
     </div>
-    <div class="card">
-      <p class="eyebrow">STEP 3 — SELF CHECK</p>
-      <h2>スキルセルフチェック（16問）</h2>
-      <p class="hint">それぞれの文が<strong>事実として</strong>当てはまるかを選んでください（1=当てはまらない 〜 5=強く当てはまる）。「〜が得意だと思う」ではなく実際の行動・回数で答えるのがコツです。心理検査ではなく、自己申告ベースのセルフチェックです。</p>
-      <div class="likert-cap"><span>1 = 当てはまらない</span><span>5 = 強く当てはまる</span></div>
-      <div id="questions"></div>
-    </div>
-    <div class="card">
-      <p class="eyebrow">STEP 4 — SELF ANALYSIS</p>
-      <h2>資質分析（12問）</h2>
-      <p class="hint">あなたの<strong>考え方の傾向</strong>を6つの軸（12種の資質）で分析します。資質に良し悪しはなく、左右どちらの傾向もそれぞれ強みです。深く考えず、直感で選んでください。結果は適職マッチの「資質適合」に反映されます。</p>
-      <div class="likert-cap"><span>1 = 当てはまらない</span><span>5 = 強く当てはまる</span></div>
-      <div id="tQuestions"></div>
-      <div class="form-foot">
-        <button class="btn primary" id="btnSubmit">診断してマンダラを生成する</button>
-        <span class="form-err" id="formErr">未回答の設問があります（ビジョンの入力もお忘れなく）</span>
+    <div class="card" id="wizStartCard">
+      <p class="eyebrow">STEP 3・4 — SELF CHECK &amp; SELF ANALYSIS</p>
+      <h2>スキルセルフチェック（16問）＋ 資質分析（12問）</h2>
+      <p class="hint">ここから先は<strong>1問ずつ</strong>画面に表示されます（全28問・約5分）。回答を選ぶと自動で次の設問に進み、<strong>「戻る」でいつでも前の設問に戻って答え直せます</strong>。途中でページを閉じても回答は保存され、続きから再開できます。</p>
+      <p class="hint">スキルセルフチェック（STEP 3）は、それぞれの文が<strong>事実として</strong>当てはまるかを1〜5で答えます。「得意だと思う」ではなく実際の行動・回数で答えるのがコツです。資質分析（STEP 4）は<strong>考え方の傾向</strong>を6つの軸（12種の資質）で見ます。資質に良し悪しはないので、深く考えず直感で。</p>
+      <div class="wiz-start">
+        <button class="btn primary" id="btnWizStart">セルフチェックをはじめる（28問）</button>
+        <span class="stat" id="wizStartStat"></span>
       </div>
+      <p class="form-err" id="formErr" style="margin:10px 0 0">ビジョン（STEP 2）を入力してからはじめてください</p>
     </div>
+  </section>
+
+  <!-- ①-b 設問ウィザード（1問ずつ表示。ステッパー上は「診断する」の一部） -->
+  <section class="panel" id="panel-wiz">
+    <div class="card wiz" id="wizCard"></div>
   </section>
 
   <!-- ②マンダラ -->
@@ -385,7 +417,7 @@
     <div class="card">
       <p class="eyebrow">MANDALA CHART</p>
       <h2>あなたの成長マンダラ</h2>
-      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。</p>
+      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。<br>アクションの文言は自動生成ですが、<strong>「マスの内容を編集」から自分の状況に合わせて書き換えられます</strong>（書き換えたマスには左上に印がつき、実行状況はそのまま引き継がれます）。</p>
       <div id="mandalaWrap"></div>
     </div>
   </section>
@@ -615,71 +647,160 @@ stepsNav.addEventListener('click', e=>{
   activate(b.dataset.panel);
 });
 function activate(name){
-  document.querySelectorAll('nav.steps button').forEach(b=>b.classList.toggle('active', b.dataset.panel===name));
+  const navName = name === 'wiz' ? 'diag' : name;   // ウィザードはステッパー上「1 診断する」の一部
+  document.querySelectorAll('nav.steps button').forEach(b=>b.classList.toggle('active', b.dataset.panel===navName));
   document.querySelectorAll('section.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
 }
 
 /* ---------- diagnosis form ---------- */
-const qBox = document.getElementById('questions');
-DIMS.forEach(d=>{
-  const div = document.createElement('div');
-  div.className = 'qdim';
-  let html = '<h3>'+d.label+'</h3>';
-  QUESTIONS[d.key].forEach((q,i)=>{
-    const name = 'q_'+d.key+'_'+i;
-    html += '<div class="q"><p>'+q+'</p><div class="likert">';
-    for(let v=1; v<=5; v++){
-      html += '<label><input type="radio" name="'+name+'" value="'+v+'">'+v+'</label>';
-    }
-    html += '</div></div>';
-  });
-  div.innerHTML = html;
-  qBox.appendChild(div);
-});
 // 興味のある職種チェックボックス
 document.getElementById('interests').innerHTML = JOBS.map(j=>
   '<label><input type="checkbox" name="interest" value="'+j.label+'">'+j.label+'</label>').join('');
 
-// 資質設問: 軸名は見せず、左極→右極の2周に分けて交互に出す（回答バイアスを減らす）
-const tBox = document.getElementById('tQuestions');
-{
-  let html = '';
-  [0,1].forEach(round=>{
-    AXES.forEach(a=>{
-      const name = 't_'+a.key+'_'+round;
-      html += '<div class="q"><p>'+AXIS_QUESTIONS[a.key][round]+'</p><div class="likert">';
-      for(let v=1; v<=5; v++) html += '<label><input type="radio" name="'+name+'" value="'+v+'">'+v+'</label>';
-      html += '</div></div>';
-    });
-  });
-  tBox.innerHTML = html;
+/* ---------- 設問ウィザード（28問を1問ずつ表示・戻る可・途中保存） ---------- */
+const DRAFT_KEY = 'axelCompassDraft';
+const SCALE_LABELS = ['当てはまらない','あまり当てはまらない','どちらとも言えない','やや当てはまる','強く当てはまる'];
+/* 出題順: スキル16問（領域順）→ 資質12問（軸名は見せず、左極→右極の2周で交互に出して回答バイアスを減らす） */
+const WIZ_ITEMS = [];
+DIMS.forEach(d=> QUESTIONS[d.key].forEach((q,i)=> WIZ_ITEMS.push({id:'q_'+d.key+'_'+i, part:'skill', dim:d.label, text:q})));
+[0,1].forEach(round=> AXES.forEach(a=> WIZ_ITEMS.push({id:'t_'+a.key+'_'+round, part:'trait', dim:'', text:AXIS_QUESTIONS[a.key][round]})));
+const SKILL_N = WIZ_ITEMS.filter(x=>x.part==='skill').length;   // 16
+const TRAIT_N = WIZ_ITEMS.length - SKILL_N;                      // 12
+const FORM_IDS = ['curIndustry','curJob','curRole','curWork','vision','ageTarget','income'];
+
+let wiz = {idx:0, answers:{}, form:null};
+function loadDraft(){
+  try{
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY));
+    if(d && d.answers) wiz = {idx:Math.min(d.idx||0, WIZ_ITEMS.length-1), answers:d.answers, form:d.form||null};
+  }catch(e){}
+}
+function saveDraft(){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(wiz)); }catch(e){} }
+function clearDraft(){ wiz = {idx:0, answers:{}, form:null}; localStorage.removeItem(DRAFT_KEY); }
+function answeredCount(){ return WIZ_ITEMS.filter(x=> wiz.answers[x.id] != null).length; }
+function snapshotForm(){
+  const f = {};
+  FORM_IDS.forEach(id=> f[id] = document.getElementById(id).value);
+  const g = document.querySelector('input[name=goal]:checked');
+  f.goal = g ? g.value : 'tenshoku';
+  f.interests = Array.from(document.querySelectorAll('input[name=interest]:checked')).map(el=>el.value);
+  return f;
+}
+function restoreForm(f){
+  if(!f) return;
+  FORM_IDS.forEach(id=>{ if(f[id] != null) document.getElementById(id).value = f[id]; });
+  if(f.goal){ const r = document.querySelector('input[name=goal][value="'+f.goal+'"]'); if(r) r.checked = true; }
+  (f.interests || []).forEach(v=>{ const c = document.querySelector('input[name=interest][value="'+v+'"]'); if(c) c.checked = true; });
+}
+function updateWizStartStat(){
+  const n = answeredCount(), total = WIZ_ITEMS.length;
+  const btn = document.getElementById('btnWizStart'), st = document.getElementById('wizStartStat');
+  if(n === 0){ btn.textContent = 'セルフチェックをはじめる（'+total+'問）'; st.textContent = ''; return; }
+  if(n >= total){ btn.textContent = '回答を確認して診断する'; st.innerHTML = '<strong>'+total+'/'+total+'問</strong> 回答済み。最後の設問から確認・答え直しができます。'; return; }
+  btn.textContent = '続きから再開する（残り'+(total-n)+'問）';
+  st.innerHTML = '<strong>'+n+'/'+total+'問</strong> 回答済み（途中保存）';
 }
 
-document.getElementById('btnSubmit').addEventListener('click', ()=>{
-  const vision = document.getElementById('vision').value.trim();
-  const goal = document.querySelector('input[name=goal]:checked').value;
+document.getElementById('btnWizStart').addEventListener('click', ()=>{
+  const err = document.getElementById('formErr');
+  const visionEl = document.getElementById('vision');
+  if(!visionEl.value.trim()){ err.style.display = 'block'; visionEl.focus(); visionEl.scrollIntoView({block:'center'}); return; }
+  err.style.display = 'none';
+  wiz.form = snapshotForm();
+  // 続きから: 最初の未回答設問へ（全問回答済みなら最後の設問へ）
+  const firstUn = WIZ_ITEMS.findIndex(x=> wiz.answers[x.id] == null);
+  wiz.idx = firstUn === -1 ? WIZ_ITEMS.length-1 : firstUn;
+  saveDraft();
+  renderWiz();
+  activate('wiz');
+  window.scrollTo({top:0});
+});
+
+function renderWiz(){
+  const box = document.getElementById('wizCard');
+  const n = WIZ_ITEMS.length, it = WIZ_ITEMS[wiz.idx], cur = wiz.answers[it.id];
+  const isSkill = it.part === 'skill';
+  const partIdx = isSkill ? wiz.idx + 1 : wiz.idx - SKILL_N + 1;
+  const isLast = wiz.idx === n - 1;
+  const done = answeredCount();
+  const skillDone = WIZ_ITEMS.slice(0, SKILL_N).every(x=> wiz.answers[x.id] != null);
+  box.innerHTML =
+    '<p class="eyebrow">'+(isSkill ? 'STEP 3 — SELF CHECK' : 'STEP 4 — SELF ANALYSIS')+'</p>' +
+    '<div class="wiz-prog"><span>'+(wiz.idx+1)+' / '+n+'</span><span class="bar"><div style="width:'+Math.round(done/n*100)+'%"></div></span><span>回答済 '+done+'問</span></div>' +
+    '<div class="wiz-sec">' +
+      '<span class="'+(isSkill ? 'on' : (skillDone ? 'done' : ''))+'">スキルセルフチェック '+(isSkill ? partIdx : SKILL_N)+'/'+SKILL_N+'</span>' +
+      '<span class="'+(isSkill ? '' : 'on')+'">資質分析 '+(isSkill ? 0 : partIdx)+'/'+TRAIT_N+'</span>' +
+    '</div>' +
+    '<p class="wiz-dim">'+(isSkill ? escapeHtml(it.dim)+' ・ 事実として当てはまりますか？' : '考え方の傾向 ・ 直感でお答えください')+'</p>' +
+    '<p class="wiz-q" id="wizQ">'+escapeHtml(it.text)+'</p>' +
+    '<div class="wiz-opts" role="radiogroup" aria-labelledby="wizQ">' +
+      [1,2,3,4,5].map(v=>'<button type="button" role="radio" aria-checked="'+(cur===v)+'" class="'+(cur===v?'on':'')+'" data-val="'+v+'"><span class="v">'+v+'</span><span class="t">'+SCALE_LABELS[v-1]+'</span></button>').join('') +
+    '</div>' +
+    '<div class="wiz-foot">' +
+      '<button type="button" class="btn ghost" id="wizBack">← 戻る'+(wiz.idx===0 ? '（入力画面へ）' : '')+'</button>' +
+      '<div class="right"><span class="form-err" id="wizErr">未回答の設問があります</span>' +
+      (isLast
+        ? '<button type="button" class="btn primary" id="wizSubmit"'+(cur==null ? ' disabled' : '')+'>診断してマンダラを生成する</button>'
+        : '<button type="button" class="btn ghost" id="wizNext"'+(cur==null ? ' disabled' : '')+'>次へ →</button>') +
+      '</div>' +
+    '</div>' +
+    '<p class="wiz-key">回答を選ぶと自動で次に進みます。答え直したいときは「戻る」で前の設問へ。キーボードの 1〜5 でも回答でき、← → で移動できます。</p>';
+}
+document.getElementById('wizCard').addEventListener('click', e=>{
+  const opt = e.target.closest('.wiz-opts button');
+  if(opt){
+    const it = WIZ_ITEMS[wiz.idx];
+    wiz.answers[it.id] = Number(opt.dataset.val);
+    saveDraft();
+    // 選択の色を一瞬見せてから次へ（最後の設問はその場に留まり「診断する」を有効化）
+    document.querySelectorAll('.wiz-opts button').forEach(b=>{ b.classList.toggle('on', b===opt); b.setAttribute('aria-checked', b===opt); });
+    if(wiz.idx < WIZ_ITEMS.length-1){ setTimeout(()=>{ wiz.idx++; saveDraft(); renderWiz(); }, 160); }
+    else renderWiz();
+    return;
+  }
+  if(e.target.closest('#wizBack')){
+    if(wiz.idx === 0){ saveDraft(); updateWizStartStat(); activate('diag'); document.getElementById('wizStartCard').scrollIntoView({block:'start'}); return; }
+    wiz.idx--; saveDraft(); renderWiz(); return;
+  }
+  const next = e.target.closest('#wizNext');
+  if(next){ if(!next.disabled && wiz.answers[WIZ_ITEMS[wiz.idx].id] != null){ wiz.idx++; saveDraft(); renderWiz(); } return; }
+  if(e.target.closest('#wizSubmit')) submitDiagnosis();
+});
+// キーボード操作: 1〜5で回答、←→で前後の設問へ
+document.addEventListener('keydown', e=>{
+  if(!document.getElementById('panel-wiz').classList.contains('active')) return;
+  if(e.target.matches('input, textarea, select')) return;
+  if(/^[1-5]$/.test(e.key)){ const b = document.querySelector('.wiz-opts button[data-val="'+e.key+'"]'); if(b){ e.preventDefault(); b.click(); } }
+  else if(e.key === 'ArrowLeft'){ const b = document.getElementById('wizBack'); if(b) b.click(); }
+  else if(e.key === 'ArrowRight'){ const b = document.getElementById('wizNext'); if(b && !b.disabled) b.click(); }
+});
+
+function submitDiagnosis(){
+  const visionEl = document.getElementById('vision');
+  const vision = visionEl.value.trim();
+  if(!vision){
+    activate('diag');
+    const err = document.getElementById('formErr');
+    err.textContent = 'ビジョン（STEP 2）が未入力です。入力してから、もう一度「回答を確認して診断する」を押してください';
+    err.style.display = 'block';
+    visionEl.focus(); visionEl.scrollIntoView({block:'center'});
+    return;
+  }
+  const missing = WIZ_ITEMS.findIndex(x=> wiz.answers[x.id] == null);
+  if(missing !== -1){ wiz.idx = missing; saveDraft(); renderWiz(); document.getElementById('wizErr').style.display = 'inline'; return; }
+  const goalEl = document.querySelector('input[name=goal]:checked');
+  const goal = goalEl ? goalEl.value : 'tenshoku';
   const scores = {};
-  let ok = !!vision;
   DIMS.forEach(d=>{
     let sum = 0;
-    QUESTIONS[d.key].forEach((_,i)=>{
-      const el = document.querySelector('input[name=q_'+d.key+'_'+i+']:checked');
-      if(!el){ ok = false; return; }
-      sum += Number(el.value);
-    });
+    QUESTIONS[d.key].forEach((_,i)=>{ sum += Number(wiz.answers['q_'+d.key+'_'+i]); });
     scores[d.key] = Math.round(sum / QUESTIONS[d.key].length * 10) / 10;
   });
   /* 軸位置 = (右極スコア − 左極スコア) / 2 → -2.0（左寄り）〜 +2.0（右寄り） */
   const axes = {};
   AXES.forEach(a=>{
-    const l = document.querySelector('input[name=t_'+a.key+'_0]:checked');
-    const r = document.querySelector('input[name=t_'+a.key+'_1]:checked');
-    if(!l || !r){ ok = false; return; }
-    axes[a.key] = Math.round((Number(r.value) - Number(l.value)) / 2 * 10) / 10;
+    axes[a.key] = Math.round((Number(wiz.answers['t_'+a.key+'_1']) - Number(wiz.answers['t_'+a.key+'_0'])) / 2 * 10) / 10;
   });
-  const err = document.getElementById('formErr');
-  if(!ok){ err.style.display = 'inline'; return; }
-  err.style.display = 'none';
   const ageVal = document.getElementById('ageTarget').value.trim();
   const meta = {
     ageTarget: ageVal ? ageVal + '歳' : '',
@@ -695,9 +816,12 @@ document.getElementById('btnSubmit').addEventListener('click', ()=>{
   const h = loadHistory();
   h.push({takenAt:new Date().toISOString(), goal, vision, scores, axes, meta});
   saveHistory(h);
+  clearDraft();
+  updateWizStartStat();
   renderAll();
   activate('mandala');
-});
+  window.scrollTo({top:0});
+}
 
 /* ---------- demo / reset ---------- */
 document.getElementById('btnDemo').addEventListener('click', ()=>{
@@ -724,6 +848,10 @@ document.getElementById('btnDemo').addEventListener('click', ()=>{
     learn:[{at:d7.toISOString(), text:'生成AI活用講座を受講開始。学んだことは翌日の業務で必ず1回試すルールにした'}],
     brand:[{at:now.toISOString(), text:'noteで学習ログを2本公開。Xでも週3回の発信を継続中'}]
   }));
+  saveCustom({ai_2:'週次レポート作成をClaudeで自動化', learn_3:'生成AI活用講座を月1章ずつ進める'});   // 手動編集したマスの例
+  clearDraft();
+  editing = false;
+  updateWizStartStat();
   renderAll();
   activate('ring');
 });
@@ -731,9 +859,38 @@ document.getElementById('btnReset').addEventListener('click', ()=>{
   localStorage.removeItem(STORE_KEY);
   localStorage.removeItem(ACT_KEY);
   localStorage.removeItem(NOTE_KEY);
+  localStorage.removeItem(CUSTOM_KEY);
+  clearDraft();
+  editing = false;
+  updateWizStartStat();
   renderAll();
   activate('diag');
 });
+
+/* ---------- マンダラの手動編集（会員が自分でアクション文言を書き換える） ---------- */
+const CUSTOM_KEY = 'axelCompassCustomActions';   // {dimKey_j: '書き換えた文言'} 初期値と同じ/空なら保存しない
+let editing = false;
+function loadCustom(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY)) || {}; }catch(e){ return {}; } }
+function saveCustom(c){ localStorage.setItem(CUSTOM_KEY, JSON.stringify(c)); }
+function actionText(dimKey, j){
+  const v = loadCustom()[dimKey+'_'+j];
+  return (v != null && v.trim()) ? v : ACTIONS[dimKey][j];
+}
+function isCustom(dimKey, j){
+  const v = loadCustom()[dimKey+'_'+j];
+  return v != null && !!v.trim() && v !== ACTIONS[dimKey][j];
+}
+function setCustom(dimKey, j, text){
+  const c = loadCustom(), k = dimKey+'_'+j, t = text.replace(/\s*\n\s*/g, ' ').trim();
+  if(!t || t === ACTIONS[dimKey][j]) delete c[k]; else c[k] = t;
+  saveCustom(c);
+}
+function resetCustom(dimKey){   // dimKey省略で全領域
+  const c = loadCustom();
+  Object.keys(c).forEach(k=>{ if(!dimKey || k.slice(0, k.lastIndexOf('_')) === dimKey) delete c[k]; });
+  saveCustom(c);
+}
+function customCount(){ return Object.keys(loadCustom()).length; }
 
 /* ---------- mandala ---------- */
 function priorities(rec){
@@ -767,38 +924,68 @@ function renderMandala(){
     const isFocus = focusKeys.has(d.key);
     const st = execStats(d.key);
     const arr = new Array(9);
-    ACTIONS[d.key].forEach((a,j)=>{
-      const k = d.key+'_'+j, s = actState(k);
-      arr[cellPos[j]] = '<button type="button" class="m-cell act s'+s+'" data-act="'+k+'" aria-pressed="'+(s>0)+'">'+a+(s>0?'<span class="st">'+ACT_LABELS[s]+'</span>':'')+'</button>';
+    ACTIONS[d.key].forEach((_,j)=>{
+      const k = d.key+'_'+j, s = actState(k), a = actionText(d.key, j), cu = isCustom(d.key, j);
+      if(editing){
+        // 編集モード: マスをそのまま入力欄にする（入力のたび自動保存。Enterで確定）
+        arr[cellPos[j]] = '<div class="m-cell editcell'+(cu?' custom':'')+'"><textarea data-editact="'+k+'" maxlength="40" aria-label="'+d.label+' アクション'+(j+1)+'" placeholder="'+escapeHtml(ACTIONS[d.key][j])+'">'+escapeHtml(a)+'</textarea></div>';
+      } else {
+        arr[cellPos[j]] = '<button type="button" class="m-cell act s'+s+'" data-act="'+k+'" aria-pressed="'+(s>0)+'">'+(cu?'<span class="cu" title="自分で書き換えたアクション"></span>':'')+escapeHtml(a)+(s>0?'<span class="st">'+ACT_LABELS[s]+'</span>':'')+'</button>';
+      }
     });
     arr[4] = '<div class="m-cell head">'+(isFocus?'<span class="badge">重点</span>':'')+d.label+'<span class="sc">自己評価 '+rec.scores[d.key].toFixed(1)+' / 5.0</span><span class="sc">行動 '+(st.started+st.habit)+'/8</span></div>';
     // 取り組みメモ: 各領域ブロックの直下に配置（記録するたび日時つき履歴→スキルスコアに転記）
     const ln = latestNote(d.key);
     const cnt = (loadNotes()[d.key] || []).length;
-    const noteHtml = '<div class="m-note">' +
-      '<textarea data-note="'+d.key+'" placeholder="'+d.label+'で取り組んだことをメモ…">'+(ln ? escapeHtml(ln.text) : '')+'</textarea>' +
-      '<div class="m-note-foot"><span class="nr-meta">'+(ln ? fmtDate(ln.at)+' ・ '+cnt+'件' : '未記録')+'</span>' +
-      '<button type="button" class="btn ghost small" data-notesave="'+d.key+'">記録</button></div></div>';
+    const noteHtml = editing
+      ? '<div class="m-block-foot"><button type="button" class="btn link" data-resetblock="'+d.key+'">この領域を初期値に戻す</button></div>'
+      : '<div class="m-note">' +
+        '<textarea data-note="'+d.key+'" placeholder="'+d.label+'で取り組んだことをメモ…">'+(ln ? escapeHtml(ln.text) : '')+'</textarea>' +
+        '<div class="m-note-foot"><span class="nr-meta">'+(ln ? fmtDate(ln.at)+' ・ '+cnt+'件' : '未記録')+'</span>' +
+        '<button type="button" class="btn ghost small" data-notesave="'+d.key+'">記録</button></div></div>';
     blocks[blockPos[i]] = '<div class="m-unit"><div class="m-block'+(isFocus?' focus':'')+'">'+arr.join('')+'</div>'+noteHtml+'</div>';
   });
   const tot = execTotal();
-  box.innerHTML =
+  const cc = customCount();
+  const toolbar = '<div class="m-toolbar">' + (editing
+    ? '<span class="edit-note">✎ 編集モード — マスの文言を直接書き換えられます（自動保存）。「実行中・習慣化」の記録はそのまま引き継がれます。</span><span class="sp"></span>' +
+      (cc ? '<button type="button" class="btn ghost small" id="btnResetAllCustom">すべて初期値に戻す（'+cc+'マス）</button>' : '') +
+      '<button type="button" class="btn primary small" id="btnEditDone">編集を終了</button>'
+    : '<span class="hint" style="margin:0">アクションは自動生成です。自分の状況に合わせて文言を書き換えられます'+(cc ? '（現在 '+cc+' マスを編集済み）' : '')+'。</span><span class="sp"></span>' +
+      '<button type="button" class="btn ghost small" id="btnEdit">✎ マスの内容を編集</button>') +
+    '</div>';
+  box.innerHTML = toolbar +
     '<div class="exec-summary">' +
       '<span>行動実行率 <strong>'+tot.rate+'%</strong></span>' +
       '<span>実行中 <strong style="font-size:16px">'+tot.started+'</strong> / 64</span>' +
       '<span>習慣化 <strong style="font-size:16px">'+tot.habit+'</strong> / 64</span>' +
       '<span style="font-size:12px">実行中=0.5、習慣化=1.0として換算</span>' +
     '</div>' +
-    '<div class="m-scroll"><div class="mandala">'+blocks.join('')+'</div></div>' +
+    '<div class="m-scroll"><div class="mandala'+(editing?' editing':'')+'">'+blocks.join('')+'</div></div>' +
     '<div class="m-legend">' +
       '<span><span class="sw" style="background:var(--focus-bg); border:1px solid var(--focus-border)"></span>重点領域（優先度Top3）</span>' +
       '<span><span class="sw" style="background:var(--accent)"></span>成長領域（8軸）</span>' +
+      '<span><span class="sw" style="background:var(--prev); border-radius:50%; width:8px; height:8px"></span>自分で書き換えたマス</span>' +
       '<span>マスをクリック: 未着手 → 実行中 → 習慣化</span>' +
       '<span>各領域の下のメモに取り組んだことを記録 → スキルスコアの一覧に転記</span>' +
       '<span>診断日: '+fmtDate(rec.takenAt)+'</span>' +
     '</div>';
 }
-document.getElementById('mandalaWrap').addEventListener('click', e=>{
+const mandalaWrap = document.getElementById('mandalaWrap');
+mandalaWrap.addEventListener('click', e=>{
+  // 編集モードの切り替え・初期値に戻す
+  if(e.target.closest('#btnEdit')){ editing = true; renderMandala(); return; }
+  if(e.target.closest('#btnEditDone')){ editing = false; renderMandala(); return; }
+  if(e.target.closest('#btnResetAllCustom')){
+    if(confirm('自分で書き換えたマスをすべて初期値（自動生成の文言）に戻します。実行状況の記録は残ります。よろしいですか？')){ resetCustom(); renderMandala(); }
+    return;
+  }
+  const rb = e.target.closest('button[data-resetblock]');
+  if(rb){
+    const key = rb.dataset.resetblock, label = DIMS.find(d=>d.key===key).label;
+    if(confirm('「'+label+'」の8マスを初期値に戻します。よろしいですか？')){ resetCustom(key); renderMandala(); }
+    return;
+  }
   const save = e.target.closest('button[data-notesave]');
   if(save){
     const k = save.dataset.notesave;
@@ -811,6 +998,28 @@ document.getElementById('mandalaWrap').addEventListener('click', e=>{
   cycleAct(b.dataset.act);
   renderMandala();
   renderRing();
+});
+// 編集モード: 入力のたびに自動保存（初期値と同じ／空に戻したら保存を消す）
+mandalaWrap.addEventListener('input', e=>{
+  const ta = e.target.closest('textarea[data-editact]');
+  if(!ta) return;
+  const k = ta.dataset.editact, p = k.lastIndexOf('_');
+  const dimKey = k.slice(0, p), j = Number(k.slice(p+1));
+  setCustom(dimKey, j, ta.value);
+  ta.parentElement.classList.toggle('custom', isCustom(dimKey, j));
+});
+// Enterで確定（改行は入れない）。空のまま離れたら初期値の文言に戻す
+mandalaWrap.addEventListener('keydown', e=>{
+  const ta = e.target.closest('textarea[data-editact]');
+  if(ta && e.key === 'Enter'){ e.preventDefault(); ta.blur(); }
+});
+mandalaWrap.addEventListener('focusout', e=>{
+  const ta = e.target.closest('textarea[data-editact]');
+  if(!ta) return;
+  const k = ta.dataset.editact, p = k.lastIndexOf('_');
+  const dimKey = k.slice(0, p), j = Number(k.slice(p+1));
+  const t = actionText(dimKey, j);
+  if(ta.value !== t) ta.value = t;
 });
 function shorten(s,n){ return s.length>n ? s.slice(0,n)+'…' : s; }
 function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1077,4 +1286,8 @@ function prefillCurrentJob(){
 
 function renderAll(){ renderMandala(); renderRing(); renderJobs(); prefillCurrentJob(); }
 renderAll();
+/* 途中保存した回答・入力があれば復元（前回診断の現職引き継ぎより下書きを優先） */
+loadDraft();
+restoreForm(wiz.form);
+updateWizStartStat();
 </script>

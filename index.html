@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Axel Growth Compass</title>
 <link rel="icon" href="assets/favicon.ico" sizes="any">
@@ -318,10 +323,23 @@
   #authBox .ttl .badge{font-size:11px; padding:2px 8px; border-radius:999px; background:var(--accent); color:#fff; font-weight:700}
   #authBox .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
   #authCode{width:8.5em; letter-spacing:.25em; font-size:22px; font-weight:700; text-align:center}
+  .consent{display:flex; gap:10px; align-items:flex-start; margin:14px 0 10px; font-size:13px; line-height:1.6; cursor:pointer}
+  .consent input{margin-top:5px; width:18px; height:18px; flex:0 0 auto; accent-color:var(--accent)}
+  .consent a{color:var(--accent-ink); font-weight:600}
   .m-toolbar.hl{padding:10px 14px; border-radius:10px; background:var(--accent-soft); border:1px dashed var(--accent); margin:14px 0}
+  @media (max-width:560px){
+    .card{padding:16px 14px}
+    .axes-box{padding:12px}
+    .axis-row{grid-template-columns:minmax(0,1fr) minmax(80px,1fr) minmax(0,1fr); gap:8px}
+    .axis-desc{display:none}
+    .axis-pole{font-size:11px; padding:2px 8px; white-space:nowrap}
+    .exec-summary{gap:10px 16px}
+    .brand h1{font-size:20px}
+  }
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
-
+</head>
+<body>
 <div class="wrap">
   <header class="app">
     <div class="brand">
@@ -360,6 +378,8 @@
           <input type="text" id="memEmail" placeholder="例: taro@example.com" autocomplete="email" inputmode="email">
         </div>
       </div>
+      <label class="consent" id="consentWrap"><input type="checkbox" id="consent"><span><a href="https://freelance.bizlink.io/privacy" target="_blank" rel="noopener">プライバシーポリシー</a>に同意し、入力内容と診断結果を株式会社ビズリンクがキャリア相談・求人紹介・サービス改善の目的で利用することに同意します<span style="color:var(--down)"> *</span></span></label>
+      <p class="hint" id="consentErr" style="display:none; color:var(--down); font-weight:600; margin:-4px 0 8px">プライバシーポリシーへの同意が必要です</p>
       <div id="authBox"></div>
       <p class="hint" style="margin:-6px 0 14px">診断結果と、マンダラの実行状況・取り組みメモは運営（株式会社ビズリンク）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは本人確認とデータの照合に使います。<strong>体調や家庭の事情など、共有したくないことはメモに書かないでください。</strong></p>
       <div class="vgrid">
@@ -787,6 +807,7 @@ document.getElementById('btnWizStart').addEventListener('click', ()=>{
   if(miss){ err.textContent = miss.msg; err.style.display = 'block'; miss.el.focus(); miss.el.scrollIntoView({block:'center'}); return; }
   err.style.display = 'none';
   const authEmail = document.getElementById('memEmail').value.trim().toLowerCase();
+  if(!requireConsent()) return;
   if(!sessionFor(authEmail)){
     const noteEl = document.getElementById('loginNote');
     if(noteEl){ noteEl.style.color = 'var(--down)'; noteEl.textContent = '診断をはじめる前に、メールアドレスの確認コードで本人確認をしてください'; noteEl.style.display = 'block'; }
@@ -1037,6 +1058,7 @@ function buildPayload(rec, diagNo){
     member: {name: m.name || '', email: m.email || ''},
     jobsAll: jobsAll, topJobGaps: topJobGaps, execPerDim: execPerDim,
     interestAdvice: interestAdvice(rec, ranked),
+    consentAt: consentAt() || null,
     current: (rec.meta && rec.meta.current) || {},
     goal: rec.goal, goalLabel: GOAL_LABELS[rec.goal], vision: rec.vision,
     ageTarget: (rec.meta && rec.meta.ageTarget) || '', income: (rec.meta && rec.meta.income) || '',
@@ -1162,6 +1184,24 @@ function showAuthErr(msg){
   const el = document.getElementById('authErr');
   if(el){ el.textContent = msg; el.style.display = 'block'; }
 }
+const CONSENT_KEY = 'axelCompassConsentAt';   // プライバシーポリシー同意日時（ISO）。診断・プロフィール送信に consentAt として添える
+function consentAt(){ try{ return localStorage.getItem(CONSENT_KEY) || ''; }catch(e){ return ''; } }
+function hasConsent(){ return !!document.getElementById('consent').checked; }
+function requireConsent(){
+  const err = document.getElementById('consentErr');
+  if(hasConsent()){ err.style.display = 'none'; return true; }
+  err.style.display = 'block';
+  document.getElementById('consentWrap').scrollIntoView({block:'center'});
+  return false;
+}
+(function initConsent(){
+  const cb = document.getElementById('consent');
+  if(consentAt()) cb.checked = true;
+  cb.addEventListener('change', ()=>{
+    try{ if(cb.checked){ if(!consentAt()) localStorage.setItem(CONSENT_KEY, new Date().toISOString()); } else localStorage.removeItem(CONSENT_KEY); }catch(e){}
+    if(cb.checked) document.getElementById('consentErr').style.display = 'none';
+  });
+})();
 let authPending = null;   // {email} 確認コード送信済みで、まだ検証していない状態
 /** #authBox の中身を、現在のメールアドレス・セッション有無・確認コード送信状況に応じて描画する */
 function renderAuthUI(){
@@ -1220,6 +1260,7 @@ document.getElementById('authBox').addEventListener('click', e=>{
   const email = document.getElementById('memEmail').value.trim().toLowerCase();
   if(e.target.closest('#btnAuthRequest') || e.target.closest('#btnAuthResend')){
     if(!looksLikeEmail_(email)) return;
+    if(!requireConsent()) return;
     authPost('auth_request', {}).then(res=>{
       // 成功時のみ「コード入力」状態にする。失敗時は元の状態（未確認／コード入力のいずれか）を保ったままエラーだけ表示する
       // （再送の失敗で、既に送信済みの前のコードを入力できなくなるのを防ぐ）
@@ -1445,7 +1486,7 @@ document.getElementById('btnSaveProfile').addEventListener('click', ()=>{
   }
 
   enqueueSync({
-    token: SYNC_TOKEN, type:'profile', syncId:'profile|'+email, member: member,
+    token: SYNC_TOKEN, type:'profile', syncId:'profile|'+email, member: member, consentAt: consentAt() || null,
     current: current, vision: vision, goal: goal, goalLabel: GOAL_LABELS[goal],
     ageTarget: ageTarget, income: income, interests: interests, source:'growth-compass-proto'
   });
@@ -1947,3 +1988,5 @@ function initAuthOnLoad(){
 }
 initAuthOnLoad();
 </script>
+</body>
+</html>

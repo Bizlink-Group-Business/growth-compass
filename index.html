@@ -307,6 +307,11 @@
   .m-block-foot{display:flex; justify-content:flex-end}
   .btn.link{background:none; border:none; color:var(--muted); font-size:11.5px; padding:2px 6px; font-weight:600; text-decoration:underline}
   .btn.link:hover{color:var(--down)}
+
+  /* メールOTP認証（本人確認） */
+  #authBox{margin-top:8px; display:flex; flex-direction:column; gap:6px}
+  #authBox .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  #authCode{width:9em; letter-spacing:.2em; font-size:16px}
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
 
@@ -314,7 +319,7 @@
   <header class="app">
     <div class="brand">
       <h1>Axel <span class="cx">Growth Compass</span></h1>
-      <span class="sub">Axel Salon 会員向け 成長診断（プロトタイプ）</span>
+      <span class="sub">成長診断 — スキルスコアと適職マッチ</span>
     </div>
     <p class="tagline">ビジョンとセルフ診断から、伸ばすべきスキルをマンダラチャートに自動展開。マンダラの行動を実行できたかも記録しながら、定期診断でスキルスコアの変化を可視化し、あなたに合う職種——そして転職まで伴走します。</p>
     <div class="demo-row">
@@ -344,12 +349,12 @@
           <input type="text" id="memName" placeholder="例: 山田 太郎" autocomplete="name">
         </div>
         <div class="fld">
-          <label for="memEmail">メールアドレス（サロン登録されている方は、サロン登録のもの）<span style="color:var(--down)"> *</span></label>
+          <label for="memEmail">メールアドレス（確認コード・結果レポートの送付先）<span style="color:var(--down)"> *</span></label>
           <input type="text" id="memEmail" placeholder="例: taro@example.com" autocomplete="email" inputmode="email">
-          <button type="button" class="btn ghost small" id="btnLoadRemote" style="margin-top:6px">以前の登録内容を読み込む</button>
+          <div id="authBox"></div>
         </div>
       </div>
-      <p class="hint" style="margin:-6px 0 14px">診断結果と、マンダラの実行状況・取り組みメモは運営（Axel Salon）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは会員の照合キーです。<strong>体調や家庭の事情など、共有したくないことはメモに書かないでください。</strong></p>
+      <p class="hint" style="margin:-6px 0 14px">診断結果と、マンダラの実行状況・取り組みメモは運営（株式会社ビズリンク）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは本人確認とデータの照合に使います。<strong>体調や家庭の事情など、共有したくないことはメモに書かないでください。</strong></p>
       <div class="vgrid">
         <div class="fld">
           <label for="curIndustry">業界</label>
@@ -449,7 +454,7 @@
     <div class="card">
       <p class="eyebrow">MANDALA CHART</p>
       <h2>あなたの成長マンダラ</h2>
-      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。<br>アクションの文言は自動生成ですが、<strong>「マスの内容を編集」から自分の状況に合わせて書き換えられます</strong>（書き換えたマスには左上に印がつき、実行状況はそのまま引き継がれます）。<br><span style="color:var(--muted)">マスの実行状況と取り組みメモは運営（Axel Salon）に共有され、キャリア相談に使います。体調や家庭の事情など、共有したくないことはメモに書かないでください。</span></p>
+      <p class="hint">中心はあなたのビジョン。周囲8ブロックが成長領域、各ブロックの8マスが具体アクションです。<strong>色付きブロックはいま優先して伸ばすべき「重点領域」</strong>（ゴールでの重要度 × 現在スコアの伸びしろで自動判定）。<br><strong>アクションのマスはクリックで「未着手 → 実行中 → 習慣化」と記録</strong>。さらに<strong>各領域ブロックの下のメモ欄</strong>に実際に取り組んだことを書いて「記録」すると、日時つき履歴としてスキルスコアの「取り組み記録」に転記されます。<br>アクションの文言は自動生成ですが、<strong>「マスの内容を編集」から自分の状況に合わせて書き換えられます</strong>（書き換えたマスには左上に印がつき、実行状況はそのまま引き継がれます）。<br><span style="color:var(--muted)">マスの実行状況と取り組みメモは運営（株式会社ビズリンク）に共有され、キャリア相談に使います。体調や家庭の事情など、共有したくないことはメモに書かないでください。</span></p>
       <div id="mandalaWrap"></div>
     </div>
   </section>
@@ -517,7 +522,7 @@ const ACTIONS = {
   net:['月2人と新しく話す','コミュニティで発言する','Giveから始める習慣','小さなイベントを企画','SNSで同業とつながる','推薦し合える関係を作る','社外プロジェクトに参加','人と人を紹介してつなぐ']
 };
 const ADVICE = {
-  ai:   {learn:'プロンプト設計の型（役割・制約・例示）と、生成AIの得意/不得意の見極め方を学ぶ。サロンの導入編動画・AI活用勉強会が対応。',
+  ai:   {learn:'プロンプト設計の型（役割・制約・例示）と、生成AIの得意/不得意の見極め方を学ぶ。AI活用勉強会や入門動画が対応。',
          do:'「毎日1つの業務をAIでやってみる」を2週間続ける。資料作成・メール・議事録など、まず時間のかかる定型業務から置き換える。'},
   plan: {learn:'課題を構造化するフレームワーク（ロジックツリー・イシューの立て方）を1冊学び、企画書の型を手に入れる。',
          do:'週1回、自分の業務の改善提案を1枚にまとめて出す。小さくてもいいので「自分発の企画」を月1本動かす。'},
@@ -532,7 +537,7 @@ const ADVICE = {
   learn:{learn:'学習の高速化（AIでの要約・アウトプット前提のインプット）を身につける。学ぶ対象はマンダラの重点領域に絞る。',
          do:'週5時間の学習枠を先にカレンダーで確保し、学んだことを24時間以内に仕事で1回使う。勉強会には月1回参加する。'},
   net:  {learn:'コミュニティでの信頼の作り方（Give first・発信との掛け算）を学ぶ。紹介が生まれる関係の構造を知る。',
-         do:'サロン内で月2人と1on1で話す。イベントや勉強会で運営side・登壇sideに回ると、つながりの質が一気に変わる。'}
+         do:'コミュニティや勉強会で月2人と1on1で話す。イベントや勉強会で運営side・登壇sideに回ると、つながりの質が一気に変わる。'}
 };
 /* 資質分析: 6軸の両極型。左右どちらも強み（良し悪しではない） */
 const AXES = [
@@ -773,6 +778,15 @@ document.getElementById('btnWizStart').addEventListener('click', ()=>{
   const miss = firstMissingRequired();
   if(miss){ err.textContent = miss.msg; err.style.display = 'block'; miss.el.focus(); miss.el.scrollIntoView({block:'center'}); return; }
   err.style.display = 'none';
+  const authEmail = document.getElementById('memEmail').value.trim().toLowerCase();
+  if(!sessionFor(authEmail)){
+    const noteEl = document.getElementById('loginNote');
+    if(noteEl){ noteEl.style.color = 'var(--down)'; noteEl.textContent = '診断をはじめる前に、メールアドレスの確認コードで本人確認をしてください'; noteEl.style.display = 'block'; }
+    renderAuthUI();
+    const authBox = document.getElementById('authBox');
+    if(authBox) authBox.scrollIntoView({block:'center'});
+    return;
+  }
   wiz.form = snapshotForm();
   wiz.mode = selectedMode();
   // 続きから: 最初の未回答設問へ（全問回答済みなら最後の設問へ）
@@ -1056,7 +1070,10 @@ function flushSync(){
   const q = loadQueue(); if(!q.length) return;
   syncing = true;
   const item = q[0];
-  fetch(SYNC_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(item)})
+  // 本人確認済みセッションを載せる（キューには保存しない＝トークンをlocalStorageの2箇所に持たせない）
+  const sess = sessionFor(item.member && item.member.email);
+  const payload = Object.assign({}, item, {session: (sess && sess.token) || ''});
+  fetch(SYNC_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)})
     .then(r=>r.json())
     .then(res=>{
       if(res && res.ok){
@@ -1066,6 +1083,14 @@ function flushSync(){
         syncing = false;
         renderSyncStatus();
         if(rest.length) flushSync();
+      } else if(res && res.error === 'unauthorized_session'){
+        // 未確認・失効したセッション: このアイテムは送らずキューに残し、以後の自動送信は止める
+        syncing = false;
+        const em = ((item.member && item.member.email) || '').trim().toLowerCase();
+        const cur = loadSession();
+        if(cur && cur.email === em) clearSession();
+        renderSyncStatus();
+        renderAuthUI();
       } else { syncing = false; renderSyncStatus(); }
     })
     .catch(()=>{ syncing = false; renderSyncStatus(); });
@@ -1078,6 +1103,130 @@ function syncStatusText(){
 }
 function renderSyncStatus(){ const el = document.getElementById('syncStatus'); if(el) el.textContent = syncStatusText(); }
 window.addEventListener('online', flushSync);
+
+/* ---------- メールOTP認証（本人確認・端末セッション） ----------
+   メールアドレスの持ち主であることを6桁の確認コードで確認し、端末ごとのセッション（90日）をlocalStorageに保持する。
+   このセッションが無い状態では、診断・マンダラ・メモ等のデータはGAS側で書き込み・読み込みとも拒否される。 */
+const SESSION_KEY = 'axelCompassSession';   // {email, token, name, expiresAt}
+function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY)); }catch(e){ return null; } }
+function saveSession(s){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }catch(e){} }
+function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
+/** 保存済みセッションが、指定のメールアドレスのもの・かつ期限内であればそれを返す（それ以外は null） */
+function sessionFor(email){
+  const norm = (email || '').trim().toLowerCase();
+  const s = loadSession();
+  if(!s || !s.token || !s.email || s.email !== norm) return null;
+  if(s.expiresAt && new Date(s.expiresAt).getTime() < Date.now()) return null;
+  return s;
+}
+/** 認証系エンドポイント（auth_request/auth_verify/auth_logout）への送信。member は現在の入力欄から都度読む */
+function authPost(type, extra){
+  const name = document.getElementById('memName').value.trim();
+  const email = document.getElementById('memEmail').value.trim().toLowerCase();
+  const body = Object.assign({token: SYNC_TOKEN, type: type, member: {name: name, email: email}}, extra || {});
+  return fetch(SYNC_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body)})
+    .then(r=>r.json())
+    .catch(()=>({ok:false, error:'network'}));
+}
+/** サーバのエラーコードを日本語メッセージへ */
+function authErrorMessage_(code, res){
+  if(code === 'too_many_requests') return '確認コードの送信回数が上限に達しました。しばらく待ってから再度お試しください';
+  if(code === 'code_invalid') return 'コードが違います（残り '+((res && res.attemptsLeft != null) ? res.attemptsLeft : '?')+' 回）';
+  if(code === 'code_expired') return 'コードの有効期限が切れました。再送してください';
+  if(code === 'too_many_attempts') return '試行回数の上限に達しました。コードを再送してください';
+  if(code === 'network') return '通信に失敗しました。もう一度お試しください';
+  return '通信エラーが発生しました。もう一度お試しください';
+}
+function showAuthErr(msg){
+  const el = document.getElementById('authErr');
+  if(el){ el.textContent = msg; el.style.display = 'block'; }
+}
+let authPending = null;   // {email} 確認コード送信済みで、まだ検証していない状態
+/** #authBox の中身を、現在のメールアドレス・セッション有無・確認コード送信状況に応じて描画する */
+function renderAuthUI(){
+  const box = document.getElementById('authBox');
+  if(!box) return;
+  const email = document.getElementById('memEmail').value.trim().toLowerCase();
+  if(!looksLikeEmail_(email)){ box.innerHTML = ''; return; }
+
+  const sess = sessionFor(email);
+  if(sess){
+    box.innerHTML =
+      '<div class="row">' +
+        '<span class="hint" style="margin:0">✔ メール確認済み: '+escapeHtml(email)+'</span>' +
+        '<button type="button" class="btn ghost small" id="btnLoadRemote">以前の登録内容を読み込む</button>' +
+        '<button type="button" class="btn ghost small" id="btnAuthLogout">別のメールアドレスを使う</button>' +
+      '</div>';
+    return;
+  }
+
+  if(authPending && authPending.email === email){
+    box.innerHTML =
+      '<span class="hint" style="margin:0">'+escapeHtml(email)+' に6桁の確認コードを送りました（10分間有効）。届かない場合は迷惑メールフォルダも確認してください</span>' +
+      '<div class="row">' +
+        '<input type="text" id="authCode" inputmode="numeric" maxlength="6" placeholder="6桁のコード">' +
+        '<button type="button" class="btn primary small" id="btnAuthVerify">確認する</button>' +
+        '<button type="button" class="btn link" id="btnAuthResend">再送する</button>' +
+      '</div>' +
+      '<span class="hint" id="authErr" style="margin:0; color:var(--down); display:none"></span>';
+    return;
+  }
+
+  box.innerHTML =
+    '<div class="row">' +
+      '<span class="hint" style="margin:0">このメールアドレスの持ち主であることを確認します</span>' +
+      '<button type="button" class="btn ghost small" id="btnAuthRequest">確認コードを送る</button>' +
+    '</div>' +
+    '<span class="hint" id="authErr" style="margin:0; color:var(--down); display:none"></span>';
+}
+document.getElementById('authBox').addEventListener('click', e=>{
+  const email = document.getElementById('memEmail').value.trim().toLowerCase();
+  if(e.target.closest('#btnAuthRequest') || e.target.closest('#btnAuthResend')){
+    if(!looksLikeEmail_(email)) return;
+    authPost('auth_request', {}).then(res=>{
+      // 成功時のみ「コード入力」状態にする。失敗時は元の状態（未確認／コード入力のいずれか）を保ったままエラーだけ表示する
+      // （再送の失敗で、既に送信済みの前のコードを入力できなくなるのを防ぐ）
+      if(res && res.ok) authPending = {email: email};
+      renderAuthUI();
+      if(!(res && res.ok)) showAuthErr(authErrorMessage_(res && res.error, res));
+    });
+    return;
+  }
+  if(e.target.closest('#btnAuthVerify')){
+    const codeEl = document.getElementById('authCode');
+    const code = codeEl ? codeEl.value.trim() : '';
+    if(!code) return;
+    authPost('auth_verify', {code: code, device: navigator.userAgent.slice(0,80)}).then(res=>{
+      if(res && res.ok){
+        saveSession({email: email, token: res.session, name: (res.member && res.member.name) || '', expiresAt: res.expiresAt});
+        authPending = null;
+        const nameEl = document.getElementById('memName');
+        if(!nameEl.value.trim() && res.member && res.member.name) nameEl.value = res.member.name;
+        renderAuthUI();
+        lastLoadedEmailForAuto = email;
+        triggerLoadRemote(email);
+      } else {
+        renderAuthUI();
+        showAuthErr(authErrorMessage_(res && res.error, res));
+      }
+    });
+    return;
+  }
+  if(e.target.closest('#btnAuthLogout')){
+    const sess = sessionFor(email);
+    if(sess) authPost('auth_logout', {session: sess.token}).catch(()=>{});
+    clearSession();
+    authPending = null;
+    renderAuthUI();
+    return;
+  }
+  if(e.target.closest('#btnLoadRemote')){
+    if(!looksLikeEmail_(email) || !sessionFor(email)) return;
+    lastLoadedEmailForAuto = email;
+    triggerLoadRemote(email);
+    return;
+  }
+});
 
 /* ---------- クロスデバイス復元（メールアドレスでログイン→GASの会員データを読み込み） ----------
    同じ会員が別の端末・ブラウザで開いても、以前の現在地・ビジョン・マンダラが復元できるようにする。
@@ -1104,10 +1253,12 @@ function scheduleStateSync(){
   stateSyncTimer = setTimeout(()=>{ const p = buildStatePayload(); if(p) enqueueSync(p); }, 4000);
 }
 
-/** GASの会員データをメールアドレスで読み込む（通信エラー時は null を返す） */
+/** GASの会員データをメールアドレスで読み込む（本人確認済みセッションが無ければ通信せずエラーを返す。通信エラー時は null） */
 function loadRemoteState(email){
   if(!SYNC_URL || SYNC_URL.indexOf('http') !== 0) return Promise.resolve(null);
-  const url = SYNC_URL + '?action=load&token=' + encodeURIComponent(SYNC_TOKEN) + '&email=' + encodeURIComponent(email);
+  const sess = sessionFor(email);
+  if(!sess) return Promise.resolve({ok:false, error:'unauthorized_session'});
+  const url = SYNC_URL + '?action=load&token=' + encodeURIComponent(SYNC_TOKEN) + '&email=' + encodeURIComponent(email) + '&session=' + encodeURIComponent(sess.token);
   return fetch(url).then(r=>r.json()).catch(()=>null);
 }
 
@@ -1123,7 +1274,13 @@ function loadRemoteState(email){
 function applyRemoteState(res){
   const noteEl = document.getElementById('loginNote');
   if(!res || !res.ok){
-    if(noteEl){ noteEl.style.color = 'var(--down)'; noteEl.textContent = '読み込みに失敗しました（通信エラー）。あとでもう一度お試しください。'; noteEl.style.display = 'block'; }
+    if(noteEl){
+      noteEl.style.color = 'var(--down)';
+      noteEl.textContent = (res && res.error === 'unauthorized_session')
+        ? 'メールアドレスの確認が必要です。確認コードを送信してください。'
+        : '読み込みに失敗しました（通信エラー）。あとでもう一度お試しください。';
+      noteEl.style.display = 'block';
+    }
     return;
   }
   if(!res.found){
@@ -1192,23 +1349,10 @@ function triggerLoadRemote(email){
   if(noteEl){ noteEl.style.color = 'var(--muted)'; noteEl.textContent = '読み込み中…'; noteEl.style.display = 'block'; }
   loadRemoteState(email).then(res=> applyRemoteState(res));
 }
-document.getElementById('btnLoadRemote').addEventListener('click', ()=>{
-  const email = document.getElementById('memEmail').value.trim().toLowerCase();
-  const noteEl = document.getElementById('loginNote');
-  if(!looksLikeEmail_(email)){
-    if(noteEl){ noteEl.style.color = 'var(--down)'; noteEl.textContent = 'メールアドレスを正しく入力してください'; noteEl.style.display = 'block'; }
-    return;
-  }
-  lastLoadedEmailForAuto = email;
-  triggerLoadRemote(email);
-});
-['blur','change'].forEach(evt=>{
-  document.getElementById('memEmail').addEventListener(evt, ()=>{
-    const email = document.getElementById('memEmail').value.trim().toLowerCase();
-    if(!looksLikeEmail_(email) || email === lastLoadedEmailForAuto) return;
-    lastLoadedEmailForAuto = email;
-    triggerLoadRemote(email);
-  });
+// 「以前の登録内容を読み込む」ボタンは #authBox 内に動的に描画され、そのクリックは authBox のイベント委譲側で処理する（本人確認済み状態でのみ表示）。
+// メールアドレス欄の入力・確定のたびに認証UI（未確認／コード入力／確認済み）を出し分ける。読み込みの自動実行はしない（本人確認後・ページ読み込み時のみ）。
+['input','blur','change'].forEach(evt=>{
+  document.getElementById('memEmail').addEventListener(evt, ()=>{ renderAuthUI(); });
 });
 
 /* Step1/2（現在地・ビジョン等）だけを保存するボタン。診断のやり直しなしで運営の記録を更新できる */
@@ -1219,6 +1363,14 @@ document.getElementById('btnSaveProfile').addEventListener('click', ()=>{
   if(!name || !looksLikeEmail_(email)){
     noteEl.style.color = 'var(--down)';
     noteEl.textContent = 'お名前とメールアドレスを正しく入力してください';
+    return;
+  }
+  if(!sessionFor(email)){
+    noteEl.style.color = 'var(--down)';
+    noteEl.textContent = '保存する前に、メールアドレスの確認コードで本人確認をしてください';
+    renderAuthUI();
+    const authBox = document.getElementById('authBox');
+    if(authBox) authBox.scrollIntoView({block:'center'});
     return;
   }
   const current = {
@@ -1718,4 +1870,30 @@ renderModeSelector();
 wiz.mode = selectedMode();
 updateWizStartStat();
 flushSync();   // 前回送れなかった診断結果があれば再送
+
+/**
+ * ページ読み込み時の認証UI初期化。
+ * メールアドレスが（前回診断の引き継ぎ等で）事前入力されており、かつ有効そうなセッションが保存されていれば、
+ * GETの auth_check で軽量にセッションの有効性を確認してから、有効な場合のみ自動で以前の登録内容を読み込む。
+ * 無効・期限切れだった場合はローカルのセッションを消し、未確認の状態としてUIを描画する。
+ */
+function initAuthOnLoad(){
+  renderAuthUI();
+  const email = document.getElementById('memEmail').value.trim().toLowerCase();
+  if(!looksLikeEmail_(email)) return;
+  const sess = sessionFor(email);
+  if(!sess) return;
+  if(!SYNC_URL || SYNC_URL.indexOf('http') !== 0) return;
+  const url = SYNC_URL + '?action=auth_check&token=' + encodeURIComponent(SYNC_TOKEN) + '&email=' + encodeURIComponent(email) + '&session=' + encodeURIComponent(sess.token);
+  fetch(url).then(r=>r.json()).then(res=>{
+    if(res && res.ok && res.valid){
+      lastLoadedEmailForAuto = email;
+      triggerLoadRemote(email);
+    } else {
+      clearSession();
+      renderAuthUI();
+    }
+  }).catch(()=>{ /* 通信エラー時はセッションを消さず、次回の操作時に再確認する */ });
+}
+initAuthOnLoad();
 </script>

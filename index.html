@@ -1066,7 +1066,7 @@ function buildPayload(rec, diagNo){
     scores: rec.scores, axes: rec.axes || null, axesFrom: rec.axesFrom || null,
     focus: pri, jobsTop3: jobs, traits: traits,
     execRate: execTotal().rate, customActionsCount: customCount(),
-    source: 'growth-compass-proto'
+    source: 'growth-compass'
   };
 }
 function enqueueSync(payload){
@@ -1091,14 +1091,14 @@ function buildMandalaPayload(){
   });
   const per = {}; DIMS.forEach(d=>{ per[d.key] = execStats(d.key).rate; });
   return {token: SYNC_TOKEN, type:'mandala', syncId:'mandala|'+m.email, member:m, at:new Date().toISOString(),
-    actions:actions, execPerDim:per, execRate:execTotal().rate, customActionsCount:customCount(), source:'growth-compass-proto'};
+    actions:actions, execPerDim:per, execRate:execTotal().rate, customActionsCount:customCount(), source:'growth-compass'};
 }
 /* 取り組みメモ1件 */
 function buildNotePayload(dimKey, note){
   const m = syncMember(); if(!m || !note || !note.text) return null;
   const d = DIMS.find(x=>x.key===dimKey);
   return {token: SYNC_TOKEN, type:'note', syncId: m.email+'|'+note.at+'|'+dimKey, member:m, at:note.at,
-    dim:dimKey, dimLabel: d ? d.label : dimKey, text:note.text, source:'growth-compass-proto'};
+    dim:dimKey, dimLabel: d ? d.label : dimKey, text:note.text, source:'growth-compass'};
 }
 /* マスの連打対策: 最後の操作から4秒後にまとめて1回送る */
 let mandalaSyncTimer = null;
@@ -1320,7 +1320,7 @@ function buildStatePayload(){
   return {
     token: SYNC_TOKEN, type:'state', syncId:'state|'+m.email, member:m,
     state:{history: loadHistory(), actions: loadActs(), custom: loadCustom(), notes: loadNotes(), updatedAt: updatedAt},
-    source:'growth-compass-proto'
+    source:'growth-compass'
   };
 }
 /* マス操作・メモ記録の連打対策: 最後の操作から4秒後にまとめて1回送る（マンダラ同期と同じ考え方） */
@@ -1488,7 +1488,7 @@ document.getElementById('btnSaveProfile').addEventListener('click', ()=>{
   enqueueSync({
     token: SYNC_TOKEN, type:'profile', syncId:'profile|'+email, member: member, consentAt: consentAt() || null,
     current: current, vision: vision, goal: goal, goalLabel: GOAL_LABELS[goal],
-    ageTarget: ageTarget, income: income, interests: interests, source:'growth-compass-proto'
+    ageTarget: ageTarget, income: income, interests: interests, source:'growth-compass'
   });
   scheduleStateSync();
 

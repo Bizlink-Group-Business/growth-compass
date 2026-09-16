@@ -337,14 +337,16 @@
       <h2>いまの仕事を教えてください</h2>
       <p class="hint">現在地がわかると、ビジョンとのギャップ＝伸ばすべきスキルがより正確になります。キャリア相談の際の基礎情報にもなります。</p>
       <p class="hint" id="curPrefillNote" style="display:none; color:var(--accent-ink); font-weight:600"></p>
+      <p class="hint" id="loginNote" style="display:none; color:var(--accent-ink); font-weight:600"></p>
       <div class="vgrid" style="margin-top:0; margin-bottom:14px">
         <div class="fld">
           <label for="memName">お名前（会員名・ニックネーム可）<span style="color:var(--down)"> *</span></label>
           <input type="text" id="memName" placeholder="例: 山田 太郎" autocomplete="name">
         </div>
         <div class="fld">
-          <label for="memEmail">メールアドレス（サロン登録のもの）<span style="color:var(--down)"> *</span></label>
+          <label for="memEmail">メールアドレス（サロン登録されている方は、サロン登録のもの）<span style="color:var(--down)"> *</span></label>
           <input type="text" id="memEmail" placeholder="例: taro@example.com" autocomplete="email" inputmode="email">
+          <button type="button" class="btn ghost small" id="btnLoadRemote" style="margin-top:6px">以前の登録内容を読み込む</button>
         </div>
       </div>
       <p class="hint" style="margin:-6px 0 14px">診断結果と、マンダラの実行状況・取り組みメモは運営（Axel Salon）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは会員の照合キーです。<strong>体調や家庭の事情など、共有したくないことはメモに書かないでください。</strong></p>
@@ -411,6 +413,14 @@
       </div>
       <p class="hint" style="margin-top:14px">興味のある職種があれば選んでください（複数OK・任意）。その職種×AIで市場価値を上げる道筋を適職マッチで提案します。</p>
       <div class="goal-grid" id="interests"></div>
+      <div class="fld" style="margin-top:10px">
+        <label for="interestOther">その他（自由に記載）</label>
+        <input type="text" id="interestOther" placeholder="例: 人事・採用企画、カスタマーサクセス、独立してフリーランス">
+      </div>
+      <div class="form-foot" style="margin-top:18px">
+        <button type="button" class="btn ghost" id="btnSaveProfile">保存</button>
+        <span class="hint" id="saveProfileNote" style="margin:0"></span>
+      </div>
     </div>
     <div class="card" id="wizStartCard">
       <p class="eyebrow">STEP 3・4 — SELF CHECK &amp; SELF ANALYSIS</p>
@@ -557,7 +567,7 @@ const POLE_NOTES = { /* 資質ごとの強みと注意点 */
 };
 const AI_VALUE = {
   '生成AIコンサルタント':'AI導入を設計できる人材は需要過多。事業側の経験×生成AI知見の掛け算で、未経験からでも高年収帯を狙える代表職種です。',
-  'AI活用営業・営業企画':'営業経験×AI活用は最も再現性の高い市場価値アップ。提案資料・リスト作成・商談分析をAIで武装した営業はまだ希少です。',
+  '営業・営業企画':'営業経験×AI活用は最も再現性の高い市場価値アップ。提案資料・リスト作成・商談分析をAIで武装した営業はまだ希少です。',
   'データアナリスト':'AIがコードやSQLを書く時代は「分析の問いを立てる力」との掛け算で価値が跳ねます。AI活用で学習コストも大幅に短縮できます。',
   'プロダクトマネージャー':'AIプロダクトを企画できるPdMは採用市場の最激戦区。AIで仕様書・調査を高速化しながらAI機能の企画経験を積むと強いです。',
   'デジタルマーケター':'クリエイティブ量産・分析・広告運用はAIで生産性が数倍に。AIマーケ人材はまだ少なく、実績を作れば単価が上がります。',
@@ -579,7 +589,7 @@ const GOAL_WEIGHTS = {
 const JOBS = [
   {label:'生成AIコンサルタント',   ideal:{ai:5, plan:4.5, brand:3, sales:3.5, data:3.5, exec:3.5, learn:4.5, net:3.5},
    axes:{gaiko:-0.5, kansei:1, shudo:-0.5, tassei:-0.5, kiritsu:0, chosen:0.5}},
-  {label:'AI活用営業・営業企画',   ideal:{ai:4, plan:4, brand:3, sales:4.5, data:3, exec:4, learn:3.5, net:4},
+  {label:'営業・営業企画',   ideal:{ai:4, plan:4, brand:3, sales:4.5, data:3, exec:4, learn:3.5, net:4},
    axes:{gaiko:-1.5, kansei:0, shudo:-1, tassei:-1, kiritsu:0.5, chosen:0.5}},
   {label:'経営企画',               ideal:{ai:3.5, plan:5, brand:2.5, sales:3, data:4.5, exec:4, learn:4, net:3.5},
    axes:{gaiko:0.5, kansei:1.5, shudo:-0.5, tassei:-0.5, kiritsu:-1, chosen:-0.5}},
@@ -612,6 +622,7 @@ function cycleAct(k){
   const a = loadActs();
   a[k] = ((a[k] || 0) + 1) % 3;
   saveActs(a);
+  scheduleStateSync();   // クロスデバイス復元用に会員データへ同期
 }
 /* 実行率: 実行中=0.5 / 習慣化=1.0 換算 */
 function execStats(dimKey){
@@ -645,6 +656,7 @@ function saveNote(dimKey, text){
   arr.push({at: new Date().toISOString(), text: text.trim()});
   all[dimKey] = arr;
   localStorage.setItem(NOTE_KEY, JSON.stringify(all));
+  scheduleStateSync();   // クロスデバイス復元用に会員データへ同期
   return true;
 }
 function allNoteEntries(){
@@ -719,19 +731,31 @@ function renderModeSelector(){
   updateWizStartStat();   // 選択に合わせて開始ボタンの文言（16問／28問）を更新
 }
 document.getElementById('wizMode').addEventListener('change', ()=>{ wiz.mode = selectedMode(); saveDraft(); updateWizStartStat(); });
+/* 興味のある職種: チェック＋「その他」自由記載をまとめて配列にする／配列からフォームへ戻す */
+function collectInterests(){
+  const arr = Array.from(document.querySelectorAll('input[name=interest]:checked')).map(el=>el.value);
+  const o = document.getElementById('interestOther').value.trim();
+  if(o) arr.push(o);
+  return arr;
+}
+function applyInterests(vals){
+  const labels = JOBS.map(j=>j.label);
+  document.querySelectorAll('input[name=interest]').forEach(el=>{ el.checked = vals.includes(el.value); });
+  document.getElementById('interestOther').value = vals.filter(v=>!labels.includes(v)).join('、');
+}
 function snapshotForm(){
   const f = {};
   FORM_IDS.forEach(id=> f[id] = document.getElementById(id).value);
   const g = document.querySelector('input[name=goal]:checked');
   f.goal = g ? g.value : 'tenshoku';
-  f.interests = Array.from(document.querySelectorAll('input[name=interest]:checked')).map(el=>el.value);
+  f.interests = collectInterests();
   return f;
 }
 function restoreForm(f){
   if(!f) return;
   FORM_IDS.forEach(id=>{ if(f[id] != null) document.getElementById(id).value = f[id]; });
   if(f.goal){ const r = document.querySelector('input[name=goal][value="'+f.goal+'"]'); if(r) r.checked = true; }
-  (f.interests || []).forEach(v=>{ const c = document.querySelector('input[name=interest][value="'+v+'"]'); if(c) c.checked = true; });
+  applyInterests(f.interests || []);
 }
 function updateWizStartStat(){
   wiz.mode = selectedMode();
@@ -881,7 +905,7 @@ function submitDiagnosis(){
     member: {name: document.getElementById('memName').value.trim(), email: document.getElementById('memEmail').value.trim().toLowerCase()},
     ageTarget: ageVal ? ageVal + '歳' : '',
     income: document.getElementById('income').value,
-    interests: Array.from(document.querySelectorAll('input[name=interest]:checked')).map(el=>el.value),
+    interests: collectInterests(),
     current: {
       industry: document.getElementById('curIndustry').value,
       jobTitle: document.getElementById('curJob').value.trim(),
@@ -896,6 +920,7 @@ function submitDiagnosis(){
   saveHistory(h);
   enqueueSync(buildPayload(rec, h.length));   // 運営の管理シートへ記録（失敗時は次回表示時に再送）
   const mp = buildMandalaPayload(); if(mp) enqueueSync(mp);   // マンダラの現状も添える
+  scheduleStateSync();   // クロスデバイス復元用の会員データも同期
   clearDraft();
   renderModeSelector();
   updateWizStartStat();
@@ -1048,11 +1073,199 @@ function flushSync(){
 function syncStatusText(){
   const q = loadQueue().length, at = localStorage.getItem(SYNC_AT_KEY);
   if(!SYNC_URL || SYNC_URL.indexOf('http') !== 0) return '';
-  if(q) return '運営への記録: 送信待ち '+q+'件（次回表示時に再送）';
-  return at ? '運営への記録: 送信済み（'+fmtDate(at)+'）' : '';
+  if(q) return '運営への記録: 送信待ち '+q+'件（次回表示時に再送）／結果レポートは送信完了後にメールでお届けします';
+  return at ? '運営への記録: 送信済み（'+fmtDate(at)+'）／診断結果レポートをご登録のメールアドレスにお送りしました' : '';
 }
 function renderSyncStatus(){ const el = document.getElementById('syncStatus'); if(el) el.textContent = syncStatusText(); }
 window.addEventListener('online', flushSync);
+
+/* ---------- クロスデバイス復元（メールアドレスでログイン→GASの会員データを読み込み） ----------
+   同じ会員が別の端末・ブラウザで開いても、以前の現在地・ビジョン・マンダラが復元できるようにする。
+   本実装（会員サイト）ができたら、この読み込み口をログインAPIに差し替える。 */
+const STATE_AT_KEY = 'axelCompassStateAt';   // ローカルのマンダラ・メモ状態を最後に変更した時刻（マージ判定に使う）
+function touchStateAt(){ try{ localStorage.setItem(STATE_AT_KEY, new Date().toISOString()); }catch(e){} }
+
+/** 会員の全ローカル状態（履歴・マンダラ実行状況・書き換え文言・取り組みメモ）のスナップショットを組み立てる */
+function buildStatePayload(){
+  const m = syncMember(); if(!m) return null;
+  const updatedAt = new Date().toISOString();
+  touchStateAt();
+  return {
+    token: SYNC_TOKEN, type:'state', syncId:'state|'+m.email, member:m,
+    state:{history: loadHistory(), actions: loadActs(), custom: loadCustom(), notes: loadNotes(), updatedAt: updatedAt},
+    source:'growth-compass-proto'
+  };
+}
+/* マス操作・メモ記録の連打対策: 最後の操作から4秒後にまとめて1回送る（マンダラ同期と同じ考え方） */
+let stateSyncTimer = null;
+function scheduleStateSync(){
+  if(!syncMember()) return;   // メール未確定（デモ・診断前）は送らない
+  clearTimeout(stateSyncTimer);
+  stateSyncTimer = setTimeout(()=>{ const p = buildStatePayload(); if(p) enqueueSync(p); }, 4000);
+}
+
+/** GASの会員データをメールアドレスで読み込む（通信エラー時は null を返す） */
+function loadRemoteState(email){
+  if(!SYNC_URL || SYNC_URL.indexOf('http') !== 0) return Promise.resolve(null);
+  const url = SYNC_URL + '?action=load&token=' + encodeURIComponent(SYNC_TOKEN) + '&email=' + encodeURIComponent(email);
+  return fetch(url).then(r=>r.json()).catch(()=>null);
+}
+
+/**
+ * 読み込んだ会員データをローカルへ反映する。
+ * マージルール:
+ *  - ローカルに履歴が無い／ローカルの最新診断の会員メールと読み込んだメールが違う → 4種類のローカルデータを丸ごと置き換え
+ *  - 同じ会員 → 履歴は takenAt でユニオン（新しい順に並べ直し）／
+ *    マンダラの実行状況・書き換え文言は、サーバの更新日時がローカルの axelCompassStateAt より新しいときだけ採用／
+ *    取り組みメモは領域ごとに at でユニオン
+ * 反映後は Step1 のフォーム（現在地・ビジョン等）も最新の診断から再プリフィルする（下書き中の回答があれば上書きしない＝下書き優先）。
+ */
+function applyRemoteState(res){
+  const noteEl = document.getElementById('loginNote');
+  if(!res || !res.ok){
+    if(noteEl){ noteEl.style.color = 'var(--down)'; noteEl.textContent = '読み込みに失敗しました（通信エラー）。あとでもう一度お試しください。'; noteEl.style.display = 'block'; }
+    return;
+  }
+  if(!res.found){
+    if(noteEl){ noteEl.style.color = 'var(--muted)'; noteEl.textContent = 'このメールアドレスの登録はまだありません。診断を完了すると保存されます。'; noteEl.style.display = 'block'; }
+    return;
+  }
+
+  const remoteEmail = (res.member && res.member.email) || '';
+  const remoteState = res.state || {};
+  const remoteHistory = Array.isArray(remoteState.history) ? remoteState.history : [];
+  const remoteActions = (remoteState.actions && typeof remoteState.actions === 'object') ? remoteState.actions : {};
+  const remoteCustom  = (remoteState.custom  && typeof remoteState.custom  === 'object') ? remoteState.custom  : {};
+  const remoteNotes   = (remoteState.notes   && typeof remoteState.notes   === 'object') ? remoteState.notes   : {};
+
+  const localLatest = latest();
+  const ownerEmail = (localLatest && localLatest.meta && localLatest.meta.member && localLatest.meta.member.email) || null;
+
+  if(!loadHistory().length || !ownerEmail || ownerEmail !== remoteEmail){
+    // ローカルに履歴が無い、または別会員のデータが入っている → 丸ごと置き換え
+    saveHistory(remoteHistory);
+    saveActs(remoteActions);
+    saveCustom(remoteCustom);
+    localStorage.setItem(NOTE_KEY, JSON.stringify(remoteNotes));
+    try{ localStorage.setItem(STATE_AT_KEY, res.updatedAt || new Date().toISOString()); }catch(e){}
+  } else {
+    // 同じ会員 → 履歴はユニオン、マンダラ状態は新しい方、メモは領域ごとにユニオン
+    const historyMap = {};
+    loadHistory().concat(remoteHistory).forEach(r=>{ if(r && r.takenAt) historyMap[r.takenAt] = r; });
+    const mergedHistory = Object.keys(historyMap).map(k=>historyMap[k]).sort((a,b)=> a.takenAt < b.takenAt ? -1 : 1);
+    saveHistory(mergedHistory);
+
+    const localUpdatedAt = localStorage.getItem(STATE_AT_KEY);
+    const remoteNewer = !!res.updatedAt && (!localUpdatedAt || res.updatedAt > localUpdatedAt);
+    if(remoteNewer){
+      saveActs(remoteActions);
+      saveCustom(remoteCustom);
+      try{ localStorage.setItem(STATE_AT_KEY, res.updatedAt); }catch(e){}
+    }
+
+    const localNotes = loadNotes();
+    const mergedNotes = {};
+    const dimKeys = Object.keys(localNotes).concat(Object.keys(remoteNotes)).filter((v,i,a)=>a.indexOf(v)===i);
+    dimKeys.forEach(k=>{
+      const noteMap = {};
+      (localNotes[k]||[]).concat(remoteNotes[k]||[]).forEach(n=>{ if(n && n.at) noteMap[n.at] = n; });
+      mergedNotes[k] = Object.keys(noteMap).map(a=>noteMap[a]).sort((a,b)=> a.at < b.at ? -1 : 1);
+    });
+    localStorage.setItem(NOTE_KEY, JSON.stringify(mergedNotes));
+  }
+
+  renderAll();          // Step1フォームの再プリフィル（下書き優先）・マンダラ/スキルスコア/適職マッチの再描画を含む
+  updateWizStartStat();
+
+  if(noteEl){
+    const dateStr = fmtDate(res.updatedAt || new Date().toISOString());
+    noteEl.style.color = 'var(--accent-ink)';
+    noteEl.textContent = '✔ '+((res.member && res.member.name) || '')+'さんの登録内容を読み込みました（最終更新 '+dateStr+'）。現在地・ビジョン・マンダラを復元しました。変更があれば書き換えて「保存」を押してください。';
+    noteEl.style.display = 'block';
+  }
+}
+
+function looksLikeEmail_(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
+let lastLoadedEmailForAuto = null;
+function triggerLoadRemote(email){
+  const noteEl = document.getElementById('loginNote');
+  if(noteEl){ noteEl.style.color = 'var(--muted)'; noteEl.textContent = '読み込み中…'; noteEl.style.display = 'block'; }
+  loadRemoteState(email).then(res=> applyRemoteState(res));
+}
+document.getElementById('btnLoadRemote').addEventListener('click', ()=>{
+  const email = document.getElementById('memEmail').value.trim().toLowerCase();
+  const noteEl = document.getElementById('loginNote');
+  if(!looksLikeEmail_(email)){
+    if(noteEl){ noteEl.style.color = 'var(--down)'; noteEl.textContent = 'メールアドレスを正しく入力してください'; noteEl.style.display = 'block'; }
+    return;
+  }
+  lastLoadedEmailForAuto = email;
+  triggerLoadRemote(email);
+});
+['blur','change'].forEach(evt=>{
+  document.getElementById('memEmail').addEventListener(evt, ()=>{
+    const email = document.getElementById('memEmail').value.trim().toLowerCase();
+    if(!looksLikeEmail_(email) || email === lastLoadedEmailForAuto) return;
+    lastLoadedEmailForAuto = email;
+    triggerLoadRemote(email);
+  });
+});
+
+/* Step1/2（現在地・ビジョン等）だけを保存するボタン。診断のやり直しなしで運営の記録を更新できる */
+document.getElementById('btnSaveProfile').addEventListener('click', ()=>{
+  const noteEl = document.getElementById('saveProfileNote');
+  const name = document.getElementById('memName').value.trim();
+  const email = document.getElementById('memEmail').value.trim().toLowerCase();
+  if(!name || !looksLikeEmail_(email)){
+    noteEl.style.color = 'var(--down)';
+    noteEl.textContent = 'お名前とメールアドレスを正しく入力してください';
+    return;
+  }
+  const current = {
+    industry: document.getElementById('curIndustry').value,
+    jobTitle: document.getElementById('curJob').value.trim(),
+    role: document.getElementById('curRole').value,
+    workDesc: document.getElementById('curWork').value.trim()
+  };
+  const vision = document.getElementById('vision').value.trim();
+  const goalEl = document.querySelector('input[name=goal]:checked');
+  const goal = goalEl ? goalEl.value : 'tenshoku';
+  const ageVal = document.getElementById('ageTarget').value.trim();
+  const ageTarget = ageVal ? ageVal+'歳' : '';
+  const income = document.getElementById('income').value;
+  const interests = collectInterests();
+  const member = {name, email};
+
+  const h = loadHistory();
+  const rec = h.length ? h[h.length-1] : null;
+  if(rec){
+    // 既に診断済み: 直近の診断記録を書き換えて保存（次回以降の引き継ぎ・運営シートの表示に反映）
+    rec.meta = rec.meta || {};
+    rec.meta.member = member;
+    rec.meta.current = current;
+    rec.vision = vision;
+    rec.goal = goal;
+    rec.meta.ageTarget = ageTarget;
+    rec.meta.income = income;
+    rec.meta.interests = interests;
+    saveHistory(h);
+  } else {
+    // まだ診断していない: ウィザードの下書きに保存しておき、診断完了時に本登録される
+    wiz.form = snapshotForm();
+    saveDraft();
+  }
+
+  enqueueSync({
+    token: SYNC_TOKEN, type:'profile', syncId:'profile|'+email, member: member,
+    current: current, vision: vision, goal: goal, goalLabel: GOAL_LABELS[goal],
+    ageTarget: ageTarget, income: income, interests: interests, source:'growth-compass-proto'
+  });
+  scheduleStateSync();
+
+  noteEl.style.color = 'var(--accent-ink)';
+  noteEl.textContent = rec ? '✔ 保存しました（運営の記録にも反映）' : '✔ 保存しました。診断完了時に本登録されます。';
+  if(rec) renderAll();
+});
 
 /* ---------- マンダラの手動編集（会員が自分でアクション文言を書き換える） ---------- */
 const CUSTOM_KEY = 'axelCompassCustomActions';   // {dimKey_j: '書き換えた文言'} 初期値と同じ/空なら保存しない
@@ -1071,11 +1284,13 @@ function setCustom(dimKey, j, text){
   const c = loadCustom(), k = dimKey+'_'+j, t = text.replace(/\s*\n\s*/g, ' ').trim();
   if(!t || t === ACTIONS[dimKey][j]) delete c[k]; else c[k] = t;
   saveCustom(c);
+  scheduleStateSync();   // クロスデバイス復元用に会員データへ同期
 }
 function resetCustom(dimKey){   // dimKey省略で全領域
   const c = loadCustom();
   Object.keys(c).forEach(k=>{ if(!dimKey || k.slice(0, k.lastIndexOf('_')) === dimKey) delete c[k]; });
   saveCustom(c);
+  scheduleStateSync();   // クロスデバイス復元用に会員データへ同期
 }
 function customCount(){ return Object.keys(loadCustom()).length; }
 
@@ -1450,19 +1665,24 @@ function renderJobs(){
   if(rec.meta && rec.meta.income) goalBits.push('年収'+rec.meta.income);
   const goalLine = goalBits.length ? 'あなたの目標「'+goalBits.join('・')+'」の実現に向けて、' : '';
   const cta = '<div class="cta-band">' +
-    '<p><strong>この診断結果をもとに、キャリアのプロと話してみませんか？</strong><br>'+goalLine+'BizCareerのキャリアアドバイザーが、あなたのスキルプロファイルと興味に合うAI関連求人をご紹介します（無料）。</p>' +
+    '<p><strong>この診断結果をもとに、キャリアのプロと話してみませんか？</strong><br>'+goalLine+'ビズリンクキャリアのキャリアアドバイザーが、あなたのスキルプロファイルと興味に合うAI関連求人をご紹介します（無料）。</p>' +
     '<button class="btn primary" id="btnCareer">無料キャリア相談を予約する</button></div>' +
-    '<p class="note">※プロトタイプのため相談予約は未接続です。本実装ではBizCareer相談フォームへ、診断結果を添えて連携します。職種プロファイルはBizCareerのRA/CAと擦り合わせて調整予定。</p>';
+    '<p class="note">※プロトタイプのため相談予約は未接続です。本実装ではビズリンクキャリア相談フォームへ、診断結果を添えて連携します。職種プロファイルはビズリンクキャリアのRA/CAと擦り合わせて調整予定。</p>';
   box.innerHTML = summaryStrip + traitProfile + (cards ? '<div class="job-cards">'+cards+'</div>'+interestHtml+table+cta : '');
   const btn = document.getElementById('btnCareer');
   if(btn) btn.addEventListener('click', ()=>{ btn.textContent = '本実装で相談フォームに接続されます'; });
 }
 
-/* 2回目以降: 現職情報を前回診断から引き継ぐ（変わっていなければスキップでOK） */
+/* 2回目以降・クロスデバイス復元後: 現職情報／ビジョン／ゴール等を前回診断から引き継ぐ（変わっていなければスキップでOK）
+   途中保存の下書き（ウィザード回答つき）があるときは、その下書きを優先してここでは上書きしない */
 function prefillCurrentJob(){
+  const note = document.getElementById('curPrefillNote');
+  let draft = null;
+  try{ draft = JSON.parse(localStorage.getItem(DRAFT_KEY)); }catch(e){}
+  if(draft && draft.form){ note.style.display = 'none'; return; }
+
   const rec = latest();
   const c = rec && rec.meta && rec.meta.current;
-  const note = document.getElementById('curPrefillNote');
   const has = !!(c && (c.industry || c.jobTitle || c.role || c.workDesc));
   const m = (rec && rec.meta && rec.meta.member) || {};
   document.getElementById('memName').value  = m.name || '';
@@ -1471,6 +1691,16 @@ function prefillCurrentJob(){
   document.getElementById('curJob').value      = has ? (c.jobTitle || '') : '';
   document.getElementById('curRole').value     = has ? (c.role || '') : '';
   document.getElementById('curWork').value     = has ? (c.workDesc || '') : '';
+  if(rec){
+    document.getElementById('vision').value = rec.vision || '';
+    const goalR = document.querySelector('input[name=goal][value="'+(rec.goal || 'tenshoku')+'"]');
+    if(goalR) goalR.checked = true;
+    const ageT = (rec.meta && rec.meta.ageTarget) || '';
+    document.getElementById('ageTarget').value = ageT ? ageT.replace(/歳$/, '') : '';
+    document.getElementById('income').value = (rec.meta && rec.meta.income) || '';
+    const interestVals = (rec.meta && rec.meta.interests) || [];
+    applyInterests(interestVals);
+  }
   if(has){
     note.textContent = '✔ 前回の診断（'+fmtDate(rec.takenAt)+'）の現職情報を引き継いでいます。変わっていなければこのステップはスキップでOK。転職・異動した場合は書き換えてください。';
     note.style.display = 'block';

@@ -309,9 +309,13 @@
   .btn.link:hover{color:var(--down)}
 
   /* メールOTP認証（本人確認） */
-  #authBox{margin-top:8px; display:flex; flex-direction:column; gap:6px}
-  #authBox .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-  #authCode{width:9em; letter-spacing:.2em; font-size:16px}
+  #authBox{margin:2px 0 14px; padding:14px 16px; border:1.5px solid var(--accent); border-radius:12px; background:var(--accent-soft); display:flex; flex-direction:column; gap:8px}
+  #authBox.ok{border-color:var(--border); background:var(--surface2)}
+  #authBox .ttl{font-weight:800; font-size:14px; color:var(--accent-ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  #authBox .ttl .badge{font-size:11px; padding:2px 8px; border-radius:999px; background:var(--accent); color:#fff; font-weight:700}
+  #authBox .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  #authCode{width:8.5em; letter-spacing:.25em; font-size:22px; font-weight:700; text-align:center}
+  .m-toolbar.hl{padding:10px 14px; border-radius:10px; background:var(--accent-soft); border:1px dashed var(--accent); margin:14px 0}
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
 
@@ -351,9 +355,9 @@
         <div class="fld">
           <label for="memEmail">メールアドレス（確認コード・結果レポートの送付先）<span style="color:var(--down)"> *</span></label>
           <input type="text" id="memEmail" placeholder="例: taro@example.com" autocomplete="email" inputmode="email">
-          <div id="authBox"></div>
         </div>
       </div>
+      <div id="authBox"></div>
       <p class="hint" style="margin:-6px 0 14px">診断結果と、マンダラの実行状況・取り組みメモは運営（株式会社ビズリンク）に共有され、キャリア相談や次回診断の比較に使います。メールアドレスは本人確認とデータの照合に使います。<strong>体調や家庭の事情など、共有したくないことはメモに書かないでください。</strong></p>
       <div class="vgrid">
         <div class="fld">
@@ -436,6 +440,7 @@
         <p class="hint" style="margin-top:14px; margin-bottom:6px">今回の診断範囲を選んでください。資質（考え方の傾向）は短期間で変わりにくいため、<strong>2回目以降はスキルセルフチェックだけ更新して、資質分析は前回の結果を引き継ぐ</strong>ことができます。</p>
         <div class="goal-grid" id="wizMode"></div>
       </div>
+      <p class="hint" id="authStat" style="display:none; font-weight:600; margin-top:14px"></p>
       <div class="wiz-start">
         <button class="btn primary" id="btnWizStart">セルフチェックをはじめる（28問）</button>
         <span class="stat" id="wizStartStat"></span>
@@ -836,9 +841,15 @@ function renderWiz(){
       '</div>' +
     '</div>' +
     (canEarly
-      ? '<p class="wiz-early">スキルセルフチェック16問はここまでです。資質は短期間で変わりにくいため、前回（'+fmtDate(pa.axesFrom || pa.takenAt)+'）の資質分析を引き継いで<strong>ここで診断を終えることもできます</strong>。答え直す場合は「次へ」で資質分析12問に進みます。<br>' +
-        '<button type="button" class="btn primary small" id="wizEarly" style="margin-top:8px">ここで診断する（資質は前回のまま）</button></p>'
-      : '') +
+      ? '<p class="wiz-early"><strong>スキルセルフチェック16問はここまでです。</strong>続けて資質分析12問に進むか、前回（'+fmtDate(pa.axesFrom || pa.takenAt)+'）の資質分析を引き継いでここで診断を終えるかを選んでください。<br>' +
+        '<span style="display:inline-flex; gap:10px; flex-wrap:wrap; margin-top:10px">' +
+          '<button type="button" class="btn primary" id="wizToTrait">資質分析に進む（12問）→</button>' +
+          '<button type="button" class="btn ghost" id="wizEarly">ここで診断を終える（資質は前回のまま）</button>' +
+        '</span></p>'
+      : (isLast && wiz.mode==='skill' && cur != null
+        ? '<p class="wiz-early">資質（考え方の傾向）も答え直したい場合は、ここから資質分析12問に進めます。<br>' +
+          '<button type="button" class="btn ghost" id="wizToTrait" style="margin-top:8px">資質分析に進む（12問）→</button></p>'
+        : '')) +
     '<p class="wiz-key">回答を選ぶと自動で次に進みます。答え直したいときは「戻る」で前の設問へ。キーボードの 1〜5 でも回答でき、← → で移動できます。</p>';
 }
 document.getElementById('wizCard').addEventListener('click', e=>{
@@ -861,6 +872,11 @@ document.getElementById('wizCard').addEventListener('click', e=>{
   const next = e.target.closest('#wizNext');
   if(next){ if(!next.disabled && wiz.answers[wizItems()[wiz.idx].id] != null){ wiz.idx++; saveDraft(); renderWiz(); } return; }
   if(e.target.closest('#wizEarly')){ wiz.mode = 'skill'; saveDraft(); submitDiagnosis(); return; }
+  if(e.target.closest('#wizToTrait')){   // 16問目から資質分析へ（スキルのみモードなら全28問モードに切り替える）
+    wiz.mode = 'full';
+    const r = document.querySelector('input[name=wizmode][value="full"]'); if(r) r.checked = true;
+    wiz.idx = SKILL_N; saveDraft(); renderWiz(); window.scrollTo({top:0}); return;
+  }
   if(e.target.closest('#wizSubmit')) submitDiagnosis();
 });
 // キーボード操作: 1〜5で回答、←→で前後の設問へ
@@ -1147,35 +1163,51 @@ function renderAuthUI(){
   const box = document.getElementById('authBox');
   if(!box) return;
   const email = document.getElementById('memEmail').value.trim().toLowerCase();
-  if(!looksLikeEmail_(email)){ box.innerHTML = ''; return; }
+  const stat = document.getElementById('authStat');
+  const setStat = (txt, ok)=>{ if(!stat) return; stat.style.display = txt ? 'block' : 'none'; stat.style.color = ok ? 'var(--accent-ink)' : 'var(--down)'; stat.textContent = txt; };
+  box.classList.remove('ok');
 
-  const sess = sessionFor(email);
-  if(sess){
+  if(!looksLikeEmail_(email)){
     box.innerHTML =
-      '<div class="row">' +
-        '<span class="hint" style="margin:0">✔ メール確認済み: '+escapeHtml(email)+'</span>' +
-        '<button type="button" class="btn ghost small" id="btnLoadRemote">以前の登録内容を読み込む</button>' +
-        '<button type="button" class="btn ghost small" id="btnAuthLogout">別のメールアドレスを使う</button>' +
-      '</div>';
+      '<div class="ttl"><span class="badge">必須</span>本人確認</div>' +
+      '<span class="hint" style="margin:0">① 上のメールアドレスを入力 → ② 「確認コードをメールで送る」 → ③ 届いた6桁のコードを入力、の順で本人確認します。確認が済むと診断を始められ、結果レポートもこのアドレスに届きます。</span>';
+    setStat('⚠ 本人確認がまだです。STEP 1 のメールアドレスを入力し、「確認コードをメールで送る」から進めてください。', false);
     return;
   }
 
+  const sess = sessionFor(email);
+  if(sess){
+    box.classList.add('ok');
+    box.innerHTML =
+      '<div class="ttl">✔ 本人確認済み <span style="font-weight:600; color:var(--ink)">'+escapeHtml(email)+'</span></div>' +
+      '<div class="row">' +
+        '<button type="button" class="btn ghost small" id="btnLoadRemote">以前の登録内容を読み込む</button>' +
+        '<button type="button" class="btn ghost small" id="btnAuthLogout">別のメールアドレスを使う</button>' +
+      '</div>';
+    setStat('✔ 本人確認済み（'+email+'）。このまま診断を始められます。', true);
+    return;
+  }
+
+  setStat('⚠ 本人確認がまだです。STEP 1 の「本人確認」で確認コードを送り、届いた6桁のコードを入力してください。', false);
   if(authPending && authPending.email === email){
     box.innerHTML =
-      '<span class="hint" style="margin:0">'+escapeHtml(email)+' に6桁の確認コードを送りました（10分間有効）。届かない場合は迷惑メールフォルダも確認してください</span>' +
+      '<div class="ttl"><span class="badge">STEP 1-2</span>届いた確認コードを入力してください</div>' +
+      '<span class="hint" style="margin:0"><strong>'+escapeHtml(email)+'</strong> に6桁の確認コードを送りました（10分間有効）。届かない場合は迷惑メールフォルダも確認してください。</span>' +
       '<div class="row">' +
-        '<input type="text" id="authCode" inputmode="numeric" maxlength="6" placeholder="6桁のコード">' +
-        '<button type="button" class="btn primary small" id="btnAuthVerify">確認する</button>' +
-        '<button type="button" class="btn link" id="btnAuthResend">再送する</button>' +
+        '<input type="text" id="authCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">' +
+        '<button type="button" class="btn primary" id="btnAuthVerify">確認する</button>' +
+        '<button type="button" class="btn link" id="btnAuthResend">コードを再送する</button>' +
       '</div>' +
       '<span class="hint" id="authErr" style="margin:0; color:var(--down); display:none"></span>';
+    const inp = document.getElementById('authCode'); if(inp) inp.focus();
     return;
   }
 
   box.innerHTML =
+    '<div class="ttl"><span class="badge">必須</span>本人確認 — このメールアドレスの持ち主であることを確認します</div>' +
     '<div class="row">' +
-      '<span class="hint" style="margin:0">このメールアドレスの持ち主であることを確認します</span>' +
-      '<button type="button" class="btn ghost small" id="btnAuthRequest">確認コードを送る</button>' +
+      '<button type="button" class="btn primary" id="btnAuthRequest">確認コードをメールで送る</button>' +
+      '<span class="hint" style="margin:0">'+escapeHtml(email)+' に6桁のコードが届きます。確認が済むと診断を始められます。</span>' +
     '</div>' +
     '<span class="hint" id="authErr" style="margin:0; color:var(--down); display:none"></span>';
 }
@@ -1501,20 +1533,20 @@ function renderMandala(){
   });
   const tot = execTotal();
   const cc = customCount();
-  const toolbar = '<div class="m-toolbar">' + (editing
+  const toolbar = '<div class="m-toolbar hl">' + (editing
     ? '<span class="edit-note">✎ 編集モード — マスの文言を直接書き換えられます（自動保存）。「実行中・習慣化」の記録はそのまま引き継がれます。</span><span class="sp"></span>' +
       (cc ? '<button type="button" class="btn ghost small" id="btnResetAllCustom">すべて初期値に戻す（'+cc+'マス）</button>' : '') +
       '<button type="button" class="btn primary small" id="btnEditDone">編集を終了</button>'
-    : '<span class="hint" style="margin:0">アクションは自動生成です。自分の状況に合わせて文言を書き換えられます'+(cc ? '（現在 '+cc+' マスを編集済み）' : '')+'。</span><span class="sp"></span>' +
-      '<button type="button" class="btn ghost small" id="btnEdit">✎ マスの内容を編集</button>') +
+    : '<span class="hint" style="margin:0"><strong>マスの文言は自分の言葉に書き換えられます。</strong>アクションは自動生成なので、自分の状況に合わせて編集してください'+(cc ? '（現在 '+cc+' マスを編集済み）' : '')+'。</span><span class="sp"></span>' +
+      '<button type="button" class="btn primary" id="btnEdit">✎ マスの内容を編集</button>') +
     '</div>';
-  box.innerHTML = toolbar +
+  box.innerHTML =
     '<div class="exec-summary">' +
       '<span>行動実行率 <strong>'+tot.rate+'%</strong></span>' +
       '<span>実行中 <strong style="font-size:16px">'+tot.started+'</strong> / 64</span>' +
       '<span>習慣化 <strong style="font-size:16px">'+tot.habit+'</strong> / 64</span>' +
       '<span style="font-size:12px">実行中=0.5、習慣化=1.0として換算</span>' +
-    '</div>' +
+    '</div>' + toolbar +
     '<div class="m-scroll"><div class="mandala'+(editing?' editing':'')+'">'+blocks.join('')+'</div></div>' +
     '<div class="m-legend">' +
       '<span><span class="sw" style="background:var(--focus-bg); border:1px solid var(--focus-border)"></span>重点領域（優先度Top3）</span>' +

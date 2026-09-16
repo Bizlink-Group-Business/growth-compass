@@ -1014,6 +1014,7 @@ document.getElementById('btnReset').addEventListener('click', ()=>{
    本実装では SYNC_URL を会員サイト管理画面のAPIに差し替える（payloadの形がAPI契約の下書き）。 */
 const SYNC_URL = 'https://script.google.com/macros/s/AKfycbyO9C0ROPftd2DigmFoezq-UzFcSvq7Jcdf04XamSv-1fKPonDh6pseb7Hbdwfgp-I-/exec';
 const SYNC_TOKEN = 'axel-compass-2026';
+const CAREER_BOOKING_URL = 'https://timerex.net/s/masafumi.yamazaki/10c3537d/';   // 無料キャリア相談の予約ページ（担当キャリアアドバイザーのTimeRex）。担当変更時はここを差し替える
 const SYNC_QUEUE_KEY = 'axelCompassSyncQueue';
 const SYNC_AT_KEY = 'axelCompassSyncedAt';
 function loadQueue(){ try{ return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY)) || []; }catch(e){ return []; } }
@@ -1853,7 +1854,7 @@ function renderJobs(){
       if(!a.listed) return '<div class="advice hl"><h4>'+escapeHtml(a.label)+'</h4>' +
         '<div class="meta">診断の職種リストにはまだない職種です</div>' +
         '<p><span class="tag">AI×価値</span>どの職種でも、AIで業務を再設計できる人材は市場価値が上がります。マンダラの重点領域（色付きブロック）を伸ばすことがそのまま近道になります。</p>' +
-        '<p class="next-step"><span class="tag">近づくには</span>キャリア相談で、この職種に向けた具体的な道筋を一緒に描きましょう。</p></div>';
+        '<p class="next-step"><span class="tag">近づくには</span>キャリア相談（下の予約ボタン）で、この職種に向けた具体的な道筋を一緒に描きましょう。</p></div>';
       return '<div class="advice hl"><h4>'+escapeHtml(a.label)+'</h4>' +
         '<div class="meta">総合適合 '+a.total+'%（全'+a.rankTotal+'職種中 '+a.rank+'位）'+(a.rank<=3?' — 適性も高い有望ルートです':'')+'</div>' +
         '<p><span class="tag">AI×価値</span>'+a.aiValue+'</p>' +
@@ -1869,8 +1870,8 @@ function renderJobs(){
   const goalLine = goalBits.length ? 'あなたの目標「'+goalBits.join('・')+'」の実現に向けて、' : '';
   const cta = '<div class="cta-band">' +
     '<p><strong>この診断結果をもとに、キャリアのプロと話してみませんか？</strong><br>'+goalLine+'ビズリンクキャリアのキャリアアドバイザーが、あなたのスキルプロファイルと興味に合うAI関連求人をご紹介します（無料）。</p>' +
-    '<a class="btn primary" id="btnCareer" href="mailto:marketing@bizlink.io?subject='+encodeURIComponent('【Growth Compass】無料キャリア相談の申し込み')+'&body='+encodeURIComponent('Growth Compassの診断結果をもとにキャリア相談を希望します。\n\nお名前: '+((rec.meta&&rec.meta.member&&rec.meta.member.name)||'')+'\n興味のある職種: '+interests.join('、')+'\n希望の連絡方法・日時: ')+'">無料キャリア相談を申し込む（メール）</a></div>' +
-    '<p class="note">メールソフトが開きます。診断結果は運営側でも確認できるので、そのまま送っていただければ担当から折り返します。</p>';
+    '<a class="btn primary" id="btnCareer" href="'+CAREER_BOOKING_URL+'" target="_blank" rel="noopener">無料キャリア相談を予約する</a></div>' +
+    '<p class="note">担当キャリアアドバイザーの予約ページ（TimeRex）が新しいタブで開きます。ご都合のよい日時を選んでください。診断結果は運営側でも確認できます。</p>';
   box.innerHTML = summaryStrip + interestHtml + (cards ? '<div class="job-cards">'+cards+'</div>' : '') + traitProfile + (cards ? table+cta : '');
 }
 
